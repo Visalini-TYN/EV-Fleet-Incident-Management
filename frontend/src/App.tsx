@@ -1,21 +1,112 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { type ReactNode } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "./context/auth-context";
+import Login from "./pages/login";
+import Signup from "./pages/signUp";
+import Home from "./pages/home";
 import { DriverIncidentsProvider } from "@/features/driver/hooks/use-driver-incidents";
 import DriverDashboard from "@/features/driver/pages/DriverDashboard";
-import HistoryPage from "@/features/driver/pages/DriverHistoryPage";
+import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
+import "./App.css";
 
-export default function App() {
+function AuthGate() {
+  const { status } = useAuth();
+
+  if (status === "loading") {
+    return null;
+  }
+
+  return status === "authenticated" ? (
+    <Navigate to="/driver" replace />
+  ) : (
+    <Navigate to="/login" replace />
+  );
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { status } = useAuth();
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "unauthenticated") {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function PublicOnly({ children }: { children: ReactNode }) {
+  const { status } = useAuth();
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "authenticated") {
+    return <Navigate to="/driver" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function App() {
   return (
     <TooltipProvider>
       <BrowserRouter>
-        <DriverIncidentsProvider>
-          <Routes>
-            <Route path="/" element={<DriverDashboard />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </DriverIncidentsProvider>
+        <Routes>
+          <Route path="/" element={<AuthGate />} />
+          <Route
+            path="/home"
+            element={
+              <RequireAuth>
+                <Home />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicOnly>
+                <Login />
+              </PublicOnly>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicOnly>
+                <Signup />
+              </PublicOnly>
+            }
+          />
+          {/* Driver routes — protected, wrapped in DriverIncidentsProvider */}
+          <Route
+            path="/driver"
+            element={
+              <RequireAuth>
+                <DriverIncidentsProvider>
+                  <DriverDashboard />
+                </DriverIncidentsProvider>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/driver/history"
+            element={
+              <RequireAuth>
+                <DriverIncidentsProvider>
+                  <DriverHistoryPage />
+                </DriverIncidentsProvider>
+              </RequireAuth>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   );
 }
+
+export default App;
