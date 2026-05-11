@@ -59,35 +59,33 @@ api.interceptors.response.use(
 
     if (!refreshToken) {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
       return Promise.reject(error);
     }
 
     try {
       const refreshResponse = await api.post<TokenResponse>(
         REFRESH_ENDPOINT,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`,
-          },
-        },
+        { refreshToken },
       );
 
       const { accessToken, refreshToken: nextRefreshToken } =
         getTokensFromResponse(refreshResponse.data || {});
 
-      if (accessToken) {
-        localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+      if (!accessToken) {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        return Promise.reject(error);
       }
+
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
 
       if (nextRefreshToken) {
         localStorage.setItem(REFRESH_TOKEN_KEY, nextRefreshToken);
       }
 
       originalRequest.headers = originalRequest.headers || {};
-      if (accessToken) {
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-      }
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
       return api(originalRequest);
     } catch (refreshError) {

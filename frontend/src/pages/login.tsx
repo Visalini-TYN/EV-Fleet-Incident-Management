@@ -11,7 +11,8 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 
 import { Eye, EyeOff, Car } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth-context";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,11 +22,19 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { status, refreshProfile } = useAuth();
 
   useEffect(() => {
     setSubmitError(null);
     setSubmitSuccess(null);
   }, [email, password]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      navigate("/home", { replace: true });
+    }
+  }, [status, navigate]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,6 +62,8 @@ const Login = () => {
 
       console.log("Login successful:", response.data);
       setSubmitSuccess("Login successful.");
+      await refreshProfile();
+      navigate("/home", { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setSubmitError(

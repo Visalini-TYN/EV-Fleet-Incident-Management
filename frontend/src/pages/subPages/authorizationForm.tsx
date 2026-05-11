@@ -104,6 +104,17 @@ export default function AuthorizationForm() {
   });
 
   const [address, setAddress] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
+  const [personalEmail, setPersonalEmail] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
+  const [panCardFile, setPanCardFile] = useState<File | null>(null);
+  const [gstinDocumentFile, setGstinDocumentFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [acceptDeclaration, setAcceptDeclaration] = useState(false);
   const [mapQuery, setMapQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -132,6 +143,10 @@ export default function AuthorizationForm() {
           fullName: payload.fullName ?? prev.fullName,
           gstin: payload.gstin ?? prev.gstin,
           panNumber: payload.panNumber ?? prev.panNumber,
+          phoneNumber:
+            payload.phoneNumber ??
+            payload.companyPhoneNumber ??
+            prev.phoneNumber,
           latitude: payload.latitude ?? prev.latitude,
           longitude: payload.longitude ?? prev.longitude,
           userType: payload.userType ?? prev.userType,
@@ -139,6 +154,30 @@ export default function AuthorizationForm() {
 
         if (typeof payload.companyAddressLine1 === "string") {
           setAddress(payload.companyAddressLine1);
+        }
+
+        if (typeof payload.addressLine2 === "string") {
+          setAddressLine2(payload.addressLine2);
+        }
+
+        if (typeof payload.countryCode === "string") {
+          setCountryCode(payload.countryCode);
+        }
+
+        if (typeof payload.companyCountryCode === "string") {
+          setCountryCode(payload.companyCountryCode);
+        }
+
+        if (typeof payload.personalEmail === "string") {
+          setPersonalEmail(payload.personalEmail);
+        }
+
+        if (typeof payload.companyName === "string") {
+          setCompanyName(payload.companyName);
+        }
+
+        if (typeof payload.companyEmail === "string") {
+          setCompanyEmail(payload.companyEmail);
         }
 
         if (
@@ -157,6 +196,92 @@ export default function AuthorizationForm() {
 
     fetchProfile();
   }, []);
+
+  const handleSubmitProfile = async () => {
+    if (!acceptDeclaration) {
+      setSubmitError("Please accept the declaration to continue.");
+      setSubmitSuccess(null);
+      return;
+    }
+
+    if (!panCardFile) {
+      setSubmitError("PAN card file is required.");
+      setSubmitSuccess(null);
+      return;
+    }
+
+    if (profile.userType === "ORGANIZATION" && !gstinDocumentFile) {
+      setSubmitError("GST document file is required for organizations.");
+      setSubmitSuccess(null);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("phoneNumber", profile.phoneNumber);
+      formData.append("countryCode", countryCode);
+      formData.append("addressLine1", address);
+      formData.append("panNumber", profile.panNumber);
+      formData.append("latitude", String(position.lat));
+      formData.append("longitude", String(position.lng));
+      formData.append("panCardFile", panCardFile);
+
+      if (addressLine2.trim()) {
+        formData.append("addressLine2", addressLine2.trim());
+      }
+
+      if (profile.userType === "INDIVIDUAL") {
+        formData.append("fullName", profile.fullName);
+
+        if (personalEmail.trim()) {
+          formData.append("personalEmail", personalEmail.trim());
+        }
+
+        if (profile.gender.trim()) {
+          formData.append("gender", profile.gender.trim());
+        }
+
+        if (companyName.trim()) {
+          formData.append("companyName", companyName.trim());
+        }
+      }
+
+      if (profile.userType === "ORGANIZATION") {
+        formData.append("companyName", companyName);
+        formData.append("companyEmail", companyEmail);
+        formData.append("gstin", profile.gstin);
+
+        if (gstinDocumentFile) {
+          formData.append("gstinDocumentFile", gstinDocumentFile);
+        }
+      }
+
+      const response = await api.post(
+        "/api/profile/complete",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      setSubmitSuccess(
+        response.data?.message ||
+          "Profile and documents saved successfully.",
+      );
+    } catch (error) {
+      console.log("Error submitting profile:", error);
+      setSubmitError("Failed to submit profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSearch = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -350,6 +475,18 @@ export default function AuthorizationForm() {
               </div>
 
               <div className="space-y-2">
+                <Label>Country Code</Label>
+
+                <Input
+                  placeholder="+1"
+                  value={countryCode}
+                  onChange={(event) =>
+                    setCountryCode(event.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label>Phone Number</Label>
 
                 <Input
@@ -365,25 +502,79 @@ export default function AuthorizationForm() {
               </div>
 
               {profile.userType === "INDIVIDUAL" && (
-                <div className="space-y-2">
-                  <Label>Gender</Label>
+                <>
+                  <div className="space-y-2">
+                    <Label>Gender</Label>
 
-                  <select
-                    value={profile.gender}
-                    onChange={(event) =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        gender: event.target.value,
-                      }))
-                    }
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+                    <select
+                      value={profile.gender}
+                      onChange={(event) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          gender: event.target.value,
+                        }))
+                      }
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Personal Email</Label>
+
+                    <Input
+                      placeholder="personal@email.com"
+                      value={personalEmail}
+                      onChange={(event) =>
+                        setPersonalEmail(event.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Company Name (Optional)</Label>
+
+                    <Input
+                      placeholder="Optional company link"
+                      value={companyName}
+                      onChange={(event) =>
+                        setCompanyName(event.target.value)
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {profile.userType === "ORGANIZATION" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Company Name</Label>
+
+                    <Input
+                      placeholder="Company name"
+                      value={companyName}
+                      onChange={(event) =>
+                        setCompanyName(event.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Company Email</Label>
+
+                    <Input
+                      placeholder="company@email.com"
+                      value={companyEmail}
+                      onChange={(event) =>
+                        setCompanyEmail(event.target.value)
+                      }
+                    />
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
@@ -435,6 +626,18 @@ export default function AuthorizationForm() {
                         }));
                       }}
                       required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Address Line 2</Label>
+
+                    <Input
+                      placeholder="Apartment, suite, etc."
+                      value={addressLine2}
+                      onChange={(event) =>
+                        setAddressLine2(event.target.value)
+                      }
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -575,7 +778,7 @@ export default function AuthorizationForm() {
                   />
                 </div>
 
-                <div className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition hover:bg-slate-50">
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition hover:bg-slate-50">
                   <CloudUpload className="mb-3 h-10 w-10 text-[#0070c0]" />
 
                   <h4 className="font-semibold">
@@ -585,7 +788,23 @@ export default function AuthorizationForm() {
                   <p className="text-sm text-slate-500">
                     PNG, JPG or PDF up to 5MB
                   </p>
-                </div>
+                  {panCardFile && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      Selected: {panCardFile.name}
+                    </p>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="sr-only"
+                    onChange={(event) =>
+                      setPanCardFile(
+                        event.target.files?.[0] || null,
+                      )
+                    }
+                  />
+                </label>
               </div>
 
               {profile.userType === "ORGANIZATION" && (
@@ -605,7 +824,7 @@ export default function AuthorizationForm() {
                     />
                   </div>
 
-                  <div className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition hover:bg-slate-50">
+                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition hover:bg-slate-50">
                     <CloudUpload className="mb-3 h-10 w-10 text-[#0070c0]" />
 
                     <h4 className="font-semibold">
@@ -615,7 +834,23 @@ export default function AuthorizationForm() {
                     <p className="text-sm text-slate-500">
                       PNG, JPG or PDF up to 5MB
                     </p>
-                  </div>
+                    {gstinDocumentFile && (
+                      <p className="mt-2 text-xs text-slate-500">
+                        Selected: {gstinDocumentFile.name}
+                      </p>
+                    )}
+
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="sr-only"
+                      onChange={(event) =>
+                        setGstinDocumentFile(
+                          event.target.files?.[0] || null,
+                        )
+                      }
+                    />
+                  </label>
                 </div>
               )}
             </div>
@@ -625,7 +860,12 @@ export default function AuthorizationForm() {
         {/* SUBMIT */}
         <section className="space-y-6">
           <div className="flex items-start gap-3">
-            <Checkbox />
+            <Checkbox
+              checked={acceptDeclaration}
+              onCheckedChange={(checked) =>
+                setAcceptDeclaration(Boolean(checked))
+              }
+            />
 
             <p className="text-sm leading-6 text-slate-600">
               I declare that the information provided is
@@ -635,13 +875,29 @@ export default function AuthorizationForm() {
             </p>
           </div>
 
+          {(submitError || submitSuccess) && (
+            <div
+              className={`rounded-md border px-4 py-3 text-sm ${
+                submitError
+                  ? "border-red-200 bg-red-50 text-red-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {submitError || submitSuccess}
+            </div>
+          )}
+
           <div className="flex justify-end gap-4">
             <Button variant="outline">
               Save as Draft
             </Button>
 
-            <Button className="bg-[#0070c0] hover:bg-[#005797]">
-              Submit for Approval
+            <Button
+              className="bg-[#0070c0] hover:bg-[#005797]"
+              onClick={handleSubmitProfile}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit for Approval"}
               <Send className="ml-2 h-4 w-4" />
             </Button>
           </div>
