@@ -20,7 +20,7 @@ if (!BASE_URL) {
  */
 function getAuthToken(): string | null {
   try {
-    return localStorage.getItem("evfleet-auth-token");
+    return localStorage.getItem("accessToken");
   } catch {
     return null;
   }

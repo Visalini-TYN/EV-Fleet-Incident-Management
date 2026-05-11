@@ -1,10 +1,10 @@
 import { type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth } from "./context/auth-context";
-import Login from "./pages/login";
-import Signup from "./pages/signUp";
-import Home from "./pages/home";
+import { useAuth } from "@/features/auth/auth-context";
+import Login from "@/features/auth/pages/LoginPage";
+import Signup from "@/features/auth/pages/SignupPage";
+import Home from "@/features/auth/pages/HomePage";
 import { DriverIncidentsProvider } from "@/features/driver/hooks/use-driver-incidents";
 import DriverDashboard from "@/features/driver/pages/DriverDashboard";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";

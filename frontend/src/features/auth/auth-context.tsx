@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react"
 
-import { api } from "../lib/api"
+import { api } from "@/lib/api/auth-client"
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated"
 

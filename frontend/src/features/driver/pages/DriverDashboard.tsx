@@ -6,24 +6,22 @@ import { AiChatPanel } from "../components/ai-chat-panel";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { DashboardHeader } from "@/components/shared/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-
+import { useAuth } from "@/features/auth/auth-context";
 // TODO(integration): replace this stub with the real useAuth hook from
 // features/auth once teammate A lands it. For now this lets the rest of
 // the driver flow be testable independently.
-function useAuthStub() {
-  return {
-    user: {
-      id: 18,                       // ← changed from 15 to match your token
-      email: "driver1@evfleet.com",
-      fullName: "Driver One",
-      role: "DRIVER" as const,
-      vehicleId: "14",         // ← keep, or change to whatever vehicle is assigned to user 18 in the DB
-    },
-  };
-}
 
 export default function DriverDashboard() {
-  const { user } = useAuthStub();
+  const { profile } = useAuth();
+// His auth context types `profile` as unknown — narrow it here.
+// TODO: refine the type once auth team firms up the profile shape.
+  const profileData = profile as
+    | { id?: number; vehicleId?: string }
+    | null;
+  const user = {
+    id: profileData?.id ?? 0,
+    vehicleId: profileData?.vehicleId ?? "EV-7789", // fallback until backend returns vehicleId
+  };
   const { incidents, refresh } = useDriverIncidents();
 
   const [submitting, setSubmitting] = useState(false);

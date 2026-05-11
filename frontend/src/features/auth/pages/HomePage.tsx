@@ -1,5 +1,5 @@
-import React from 'react'
-import AuthorizationForm from './subPages/authorizationForm'
+import React from "react";
+import AuthorizationForm from "@/features/auth/components/authorization-form";
 
 type Props = {}
 

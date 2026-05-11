@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { api } from "../../lib/api";
+import { api } from "@/lib/api/auth-client";
 
 import {
   Bell,
@@ -29,19 +27,19 @@ import L from "leaflet";
 
 import "leaflet/dist/leaflet.css";
 
-import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Checkbox } from "../../components/ui/checkbox";
-import { Switch } from "../../components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog";
+} from "@/components/ui/dialog";
 
 /* FIX LEAFLET DEFAULT ICON */
 delete (L.Icon.Default.prototype as any)._getIconUrl;

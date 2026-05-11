@@ -1,18 +1,18 @@
-// Login.tsx
+// LoginPage.tsx
 
 import { useEffect, useState, type FormEvent } from "react";
 import axios from "axios";
-import { api } from "../lib/api";
+import { api } from "@/lib/api/auth-client";
 
-import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { Eye, EyeOff, Car } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/auth-context";
+import { useAuth } from "@/features/auth/auth-context";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);

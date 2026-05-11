@@ -1,14 +1,14 @@
-// Signup.tsx
+// SignupPage.tsx
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import axios from "axios";
 
-import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import {
   Select,
@@ -16,7 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from "@/components/ui/select";
 import { Link } from "react-router-dom";
 
 type IndividualPayload = {
