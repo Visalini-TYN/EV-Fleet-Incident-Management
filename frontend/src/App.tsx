@@ -12,6 +12,7 @@ import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
 import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
+import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -76,10 +77,6 @@ function RequireRole({
     return <Navigate to={redirectTo} replace />;
   }
 
-
-
-  if (status === "loading") return null;
-  if (status === "authenticated") return <Navigate to="/driver" replace />;
   return <>{children}</>;
 }
 
@@ -159,6 +156,14 @@ function App() {
             element={
               <RequireRole allowedRoles={["admin"]}>
                 <AdminVehiclePage />
+              </RequireRole>
+            }
+          />
+           <Route
+            path="/admin/onboarding"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminOnboardingPage/>
               </RequireRole>
             }
           />

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 
 import AdminLayout from "./AdminLayout";
-import { api } from "@/lib/api/auth-client";
+import { vehiclesApi } from "@/lib/api/vehicles";
 
 export default function AdminVehiclePage() {
   const [openModal, setOpenModal] = useState(false);
@@ -26,36 +26,37 @@ export default function AdminVehiclePage() {
 
   const [error, setError] = useState<string | null>(null);
 
+  // FORM STATE FOR NEW VEHICLE
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [licensePlate, setLicensePlate] = useState("");
+  const [vin, setVin] = useState("");
+  const [year, setYear] = useState<string>("");
+  const [battery, setBattery] = useState<string>("");
+  const [chassisNo, setChassisNo] = useState("");
+  const [saving, setSaving] = useState(false);
+
   // FILTER STATES
   const [searchTerm, setSearchTerm] = useState("");
 
   const [statusFilter, setStatusFilter] = useState("ALL");
 
+  const fetchVehicles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const vehiclesData = await vehiclesApi.getAll();
+      setVehicles(vehiclesData ?? []);
+    } catch (err) {
+      console.error("Failed to fetch vehicles:", err);
+      setError("Failed to load vehicles. Please try again later.");
+      setVehicles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        setLoading(true);
-
-        const response = await api.get("/api/vehicles");
-
-        const vehiclesData = Array.isArray(response.data)
-          ? response.data
-          : response.data?.data || [];
-
-        setVehicles(vehiclesData);
-
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch vehicles:", err);
-
-        setError("Failed to load vehicles. Please try again later.");
-
-        setVehicles([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchVehicles();
   }, []);
 
@@ -341,36 +342,50 @@ export default function AdminVehiclePage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <input
                 placeholder="Make"
+                value={make}
+                onChange={(e) => setMake(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="Model"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="License Plate"
+                value={licensePlate}
+                onChange={(e) => setLicensePlate(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="VIN"
+                value={vin}
+                onChange={(e) => setVin(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="Year"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="Battery Capacity"
+                value={battery}
+                onChange={(e) => setBattery(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20"
               />
 
               <input
                 placeholder="Chassis Number"
+                value={chassisNo}
+                onChange={(e) => setChassisNo(e.target.value)}
                 className="h-11 rounded-md border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#0070c0]/20 md:col-span-2"
               />
             </div>
@@ -384,8 +399,46 @@ export default function AdminVehiclePage() {
                 Cancel
               </Button>
 
-              <Button className="bg-[#0070c0] hover:bg-[#005797]">
-                Save Vehicle
+              <Button
+                className="bg-[#0070c0] hover:bg-[#005797]"
+                onClick={async () => {
+                  // Basic validation
+                  if (!make || !model || !licensePlate) return;
+                  setSaving(true);
+                  try {
+                    const payload: any = {
+                      make,
+                      model,
+                      licensePlate,
+                      vin,
+                      chassisNo,
+                      yearOfManufacture: year ? Number(year) : undefined,
+                      batteryCapacityKwh: battery ? Number(battery) : undefined,
+                      status: "AVAILABLE",
+                    };
+
+                    await vehiclesApi.create(payload);
+                    // refresh list
+                    await fetchVehicles();
+                    // close and reset form
+                    setOpenModal(false);
+                    setMake("");
+                    setModel("");
+                    setLicensePlate("");
+                    setVin("");
+                    setYear("");
+                    setBattery("");
+                    setChassisNo("");
+                  } catch (err) {
+                    console.error("Failed to save vehicle:", err);
+                    setError("Failed to save vehicle. Please try again.");
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Vehicle"}
               </Button>
             </div>
           </DialogContent>
