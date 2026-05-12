@@ -11,7 +11,8 @@ export default function Home() {
     return null;
   }
 
-  if (normalizedRole === "admin") {
+
+  if (normalizedRole === "admin" || normalizedRole === "vendor_admin") {
     return <HomeforAdmin />;
   }
 

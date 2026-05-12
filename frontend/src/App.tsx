@@ -11,6 +11,7 @@ import DriverDashboard from "@/features/driver/pages/DriverDashboard";
 import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import "./App.css";
+import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
 
 
 function AuthGate() {
@@ -75,6 +76,11 @@ function RequireRole({
 }) {
   const { status, role } = useAuth();
   const normalizedRole = role?.toLowerCase();
+  // Treat vendor_admin (and variants) as admin per Home page logic.
+  const normalizedRoleCanonical =
+    normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin"
+      ? "admin"
+      : normalizedRole;
   const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
 
   if (status === "loading") {
@@ -87,7 +93,7 @@ function RequireRole({
 
   console.log("RequireRole role:", role);
 
-  if (!normalizedRole || !allowedRolesNormalized.includes(normalizedRole)) {
+  if (!normalizedRoleCanonical || !allowedRolesNormalized.includes(normalizedRoleCanonical)) {
     return <Navigate to={redirectTo} replace />;
   }
 
@@ -165,14 +171,14 @@ function App() {
               </RequireRole>
             }
           />
-          {/* <Route
+          <Route
             path="/admin/vehicle"
             element={
               <RequireRole allowedRoles={["admin"]}>
                 <AdminVehiclePage />
               </RequireRole>
             }
-          /> */}
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
