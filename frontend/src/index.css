@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Colors */
+  --color-background: #F5F7FA;
+  --color-foreground: #1A1C1E;
+  
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1A1C1E;
+  
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1A1C1E;
+  
+  --color-primary: #2563EB;
+  --color-primary-foreground: #FFFFFF;
+  
+  --color-secondary: #F1F5F9;
+  --color-secondary-foreground: #475569;
+  
+  --color-muted: #F8FAFC;
+  --color-muted-foreground: #64748B;
+  
+  --color-accent: #F1F5F9;
+  --color-accent-foreground: #1E293B;
+  
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FFFFFF;
+  
+  --color-border: #E2E8F0;
+  --color-input: #E2E8F0;
+  --color-ring: #3B82F6;
+  
+  --radius: 12px;
+  
+  /* Spacing Scale (8px system) */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Custom Utilities for SaaS Look */
+@layer components {
+  .saas-card {
+    @apply bg-white border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.04)] rounded-[12px] transition-all hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)];
+  }
+  
+  .saas-table-header {
+    @apply text-[11px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 border-b border-border/40 px-6 py-3;
+  }
+  
+  .saas-table-row {
+    @apply border-b border-border/30 hover:bg-muted/30 transition-colors;
+  }
+  
+  .saas-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border transition-colors;
+  }
+}
+
+/* Typography Scale */
+h1 { @apply text-[32px] font-semibold tracking-tight; }
+h2 { @apply text-[20px] font-semibold tracking-tight; }
+.metric-value { @apply text-[36px] font-bold tracking-tight; }
+.label-text { @apply text-[12px] font-medium text-muted-foreground uppercase tracking-wider; }
