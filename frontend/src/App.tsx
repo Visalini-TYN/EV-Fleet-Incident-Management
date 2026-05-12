@@ -11,6 +11,8 @@ import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
+import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
+import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -31,6 +33,50 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 function PublicOnly({ children }: { children: ReactNode }) {
   const { status } = useAuth();
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "authenticated") {
+    return <Navigate to="/driver" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function RequireRole({
+  children,
+  allowedRoles,
+  redirectTo = "/home",
+}: {
+  children: ReactNode;
+  allowedRoles: string[];
+  redirectTo?: string;
+}) {
+  const { status, role } = useAuth();
+  const normalizedRole = role?.toLowerCase();
+  // Treat vendor_admin (and variants) as admin per Home page logic.
+  const normalizedRoleCanonical =
+    normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin"
+      ? "admin"
+      : normalizedRole;
+  const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "unauthenticated") {
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log("RequireRole role:", role);
+
+  if (!normalizedRoleCanonical || !allowedRolesNormalized.includes(normalizedRoleCanonical)) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
   if (status === "loading") return null;
   if (status === "authenticated") return <Navigate to="/driver" replace />;
   return <>{children}</>;
@@ -105,6 +151,22 @@ function App() {
                   <IncidentDetailPage />
                 </DriverIncidentsProvider>
               </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin/vehicle"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminVehiclePage />
+              </RequireRole>
+            }
+          />
+           <Route
+            path="/admin/onboarding"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminOnboardingPage/>
+              </RequireRole>
             }
           />
         </Routes>

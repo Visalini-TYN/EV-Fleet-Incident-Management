@@ -56,7 +56,19 @@ export function AppSidebar() {
   const role = authRole ?? profileData?.role ?? "Driver";
   const initials = getInitials(profileData?.fullName);
   const normalizedRole = role.toLowerCase();
-  const navItems = normalizedRole === "admin" ? adminNavItems : driverNavItems;
+  // Home page logic treats `admin` and `vendor_admin` as admin users.
+  const isAdmin =
+    normalizedRole === "admin" ||
+    normalizedRole === "vendor_admin" ||
+    normalizedRole === "vendor-admin";
+  const navItems = isAdmin ? adminNavItems : driverNavItems;
+
+  const displayRoleLabel = (() => {
+    if (normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin") return "Vendor Admin";
+    if (normalizedRole === "admin") return "Admin";
+    if (normalizedRole === "driver") return "Driver";
+    return role;
+  })();
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -81,7 +93,7 @@ export function AppSidebar() {
               {displayName}
             </div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">
-              {userId !== undefined ? `${role} · ID ${userId}` : role}
+              {userId !== undefined ? `${displayRoleLabel} · ID ${userId}` : displayRoleLabel}
             </div>
           </div>
         </div>

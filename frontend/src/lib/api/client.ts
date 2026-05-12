@@ -4,12 +4,7 @@
 // the public surface (request, ApiError) without team agreement.
 // =============================================================================
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
-
-if (!BASE_URL) {
-  // eslint-disable-next-line no-console
-  console.error("VITE_API_BASE_URL is not set. Check your .env file.");
-}
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 /**
  * Token accessor. Teammate A's auth module should replace this with a real

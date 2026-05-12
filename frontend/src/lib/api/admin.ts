@@ -22,6 +22,8 @@ export type VehicleRecord = {
   registrationNumber?: string;
   name?: string;
   model?: string;
+  make?: string;
+  licensePlate?: string;
   status?: string;
   serviceDue?: string;
   assignedDriverName?: string;

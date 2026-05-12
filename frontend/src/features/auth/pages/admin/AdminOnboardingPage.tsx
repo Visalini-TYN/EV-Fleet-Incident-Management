@@ -74,11 +74,14 @@ export default function AdminOnboardingPage() {
       try {
         const data = await fetchVehicles();
         const list = Array.isArray(data) ? data : [];
+        console.log("Vehicles fetched:", list);
+        console.log("Available vehicles:", list.filter((v) => v.status?.toUpperCase() === "AVAILABLE"));
         setVehicles(list);
         if (list.length > 0) {
           setSelectedVehicleId((prev) => prev ?? list[0].id);
         }
-      } catch {
+      } catch (err) {
+        console.error("Failed to fetch vehicles:", err);
         setVehicles([]);
       }
     };
@@ -342,32 +345,42 @@ export default function AdminOnboardingPage() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 text-sm sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <label className="text-xs uppercase text-[#717783]">Assign Vehicle</label>
-              <select
-                className="mt-1 w-full rounded-md border border-[#c0c7d3] bg-white px-3 py-2 text-sm"
-                value={selectedVehicleId ?? ""}
-                onChange={(event) => setSelectedVehicleId(Number(event.target.value))}
-                disabled={vehicles.length === 0}
+          {selectedUser.role?.toLowerCase() === "driver" && (
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <label className="text-xs uppercase text-[#717783]">Assign Vehicle</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-[#c0c7d3] bg-white px-3 py-2 text-sm"
+                  value={selectedVehicleId ?? ""}
+                  onChange={(event) => {
+                    const vehicleId = Number(event.target.value);
+                    const selected = vehicles.find((v) => v.id === vehicleId);
+                    console.log("Selected vehicle:", selected);
+                    setSelectedVehicleId(vehicleId);
+                  }}
+                  disabled={vehicles.filter((v) => v.status?.toUpperCase() === "AVAILABLE").length === 0}
+                >
+                  {vehicles.filter((v) => v.status?.toUpperCase() === "AVAILABLE").length === 0 && (
+                    <option value="">No available vehicles</option>
+                  )}
+                  {vehicles
+                    .filter((vehicle) => vehicle.status?.toUpperCase() === "AVAILABLE")
+                    .map((vehicle) => (
+                      <option key={vehicle.id} value={vehicle.id}>
+                        {vehicle.make} {vehicle.model} - {vehicle.licensePlate}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <button
+                className="rounded-lg bg-[#005797] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#00457a] disabled:opacity-50"
+                onClick={() => void handleAssignVehicle()}
+                disabled={!selectedVehicleId || vehicles.length === 0}
               >
-                {vehicles.length === 0 && <option value="">No vehicles</option>}
-                {vehicles.map((vehicle) => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.registrationNumber || vehicle.vehicleNumber || vehicle.name ||
-                      `Vehicle ${vehicle.id}`}
-                  </option>
-                ))}
-              </select>
+                Assign Vehicle
+              </button>
             </div>
-            <button
-              className="rounded-lg bg-[#005797] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#00457a] disabled:opacity-50"
-              onClick={() => void handleAssignVehicle()}
-              disabled={!selectedVehicleId || vehicles.length === 0}
-            >
-              Assign Vehicle
-            </button>
-          </div>
+          )}
 
           {actionMessage && (
             <p className="mt-3 text-sm text-[#005797]">{actionMessage}</p>
