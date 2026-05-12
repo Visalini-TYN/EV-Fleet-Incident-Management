@@ -6,21 +6,9 @@ import { AiChatPanel } from "../components/ai-chat-panel";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { DashboardHeader } from "@/components/shared/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useAuth } from "@/features/auth/auth-context";
 
 export default function IncidentReportPage() {
-  const { profile } = useAuth();
   const { refresh } = useDriverIncidents();
-
-  // Auth profile is typed as unknown — narrow here.
-  const profileData = profile as { id?: number } | null;
-  const user = {
-    id: profileData?.id ?? 0,
-    // vehicleId is now resolved server-side, but the AI chat still needs
-    // a value to send with /api/ai/queries. Use a placeholder until backend
-    // also auto-fills it there.
-    vehicleId: "AUTO",
-  };
 
   const [submitting, setSubmitting] = useState(false);
   const [activeIncidentId, setActiveIncidentId] = useState<number | null>(null);
@@ -31,8 +19,6 @@ export default function IncidentReportPage() {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      // vehicleId is omitted — backend resolves it from the driver's
-      // assigned vehicle automatically.
       await incidentsApi.create({
         complaintData: {
           issueCategory: draft.issueCategory,
@@ -81,26 +67,35 @@ export default function IncidentReportPage() {
   };
 
   return (
+    /*
+      Constrain the whole sidebar layout to viewport height so its children
+      can use flex/overflow to scroll internally without the page itself
+      scrolling.
+    */
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="h-screen overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 space-y-6 p-4 sm:p-6">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6">
           {submitError && (
-            <div className="rounded border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="mb-4 shrink-0 rounded border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {submitError}
             </div>
           )}
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <IncidentForm onSubmit={handleSubmit} submitting={submitting} />
-            <AiChatPanel
-              complaintId={activeIncidentId}
-              userId={user.id}
-              vehicleId={user.vehicleId}
-              initialQuestion={activeQuestion}
-              onConcluded={handleConcluded}
-            />
+          <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2">
+            {/* Left column scrolls independently */}
+            <div className="min-h-0 overflow-y-auto">
+              <IncidentForm onSubmit={handleSubmit} submitting={submitting} />
+            </div>
+            {/* Chat panel manages its own internal scrolling */}
+            <div className="min-h-0">
+              <AiChatPanel
+                complaintId={activeIncidentId}
+                initialQuestion={activeQuestion}
+                onConcluded={handleConcluded}
+              />
+            </div>
           </div>
         </main>
       </SidebarInset>
