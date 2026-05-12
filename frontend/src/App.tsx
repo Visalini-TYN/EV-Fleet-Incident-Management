@@ -32,7 +32,6 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 function PublicOnly({ children }: { children: ReactNode }) {
   const { status } = useAuth();
-<<<<<<< HEAD
 
   if (status === "loading") {
     return null;
@@ -56,6 +55,11 @@ function RequireRole({
 }) {
   const { status, role } = useAuth();
   const normalizedRole = role?.toLowerCase();
+  // Treat vendor_admin (and variants) as admin per Home page logic.
+  const normalizedRoleCanonical =
+    normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin"
+      ? "admin"
+      : normalizedRole;
   const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
 
   if (status === "loading") {
@@ -68,16 +72,14 @@ function RequireRole({
 
   console.log("RequireRole role:", role);
 
-  if (!normalizedRole || !allowedRolesNormalized.includes(normalizedRole)) {
+  if (!normalizedRoleCanonical || !allowedRolesNormalized.includes(normalizedRoleCanonical)) {
     return <Navigate to={redirectTo} replace />;
   }
 
 
 
-=======
   if (status === "loading") return null;
   if (status === "authenticated") return <Navigate to="/driver" replace />;
->>>>>>> 4e7aaec368fc4130cafe53d57d4599355cef2701
   return <>{children}</>;
 }
 
@@ -152,7 +154,6 @@ function App() {
               </RequireAuth>
             }
           />
-<<<<<<< HEAD
           <Route
             path="/admin/vehicle"
             element={
@@ -161,8 +162,6 @@ function App() {
               </RequireRole>
             }
           />
-=======
->>>>>>> 4e7aaec368fc4130cafe53d57d4599355cef2701
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
