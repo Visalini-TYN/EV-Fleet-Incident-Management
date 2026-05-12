@@ -35,12 +35,20 @@ const STATUS_LABEL: Record<IncidentStatus, string> = {
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
+  // New short-form categories
+  BATTERY: "Battery",
+  MOTOR: "Motor",
+  SOFTWARE: "Software",
+  CHARGING: "Charging",
+  BRAKE: "Brake",
+  TYRE: "Tyre",
+  UNKNOWN: "Other / not sure",
+  // Legacy categories — kept so old incidents in history still display nicely
   STARTING_ISSUE: "Starting issue",
   BATTERY_ISSUE: "Battery issue",
   CHARGING_ISSUE: "Charging issue",
   TIRE_ISSUE: "Tire issue",
   SOFTWARE_GLITCH: "Software glitch",
-  UNKNOWN: "Other / not sure",
 };
 
 export function IncidentDetailsCard({ incident }: IncidentDetailsCardProps) {
