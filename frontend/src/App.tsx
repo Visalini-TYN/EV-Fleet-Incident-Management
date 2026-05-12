@@ -77,9 +77,8 @@ function RequireRole({
     return <Navigate to={redirectTo} replace />;
   }
 
-  if (status === "loading") return null;
-  if (status === "authenticated") return <Navigate to="/driver" replace />;
   return <>{children}</>;
+
 }
 
 function App() {
