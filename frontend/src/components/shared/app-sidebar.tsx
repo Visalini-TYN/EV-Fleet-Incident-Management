@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 
-const navItems = [
 const driverNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/driver" },
   { title: "Incident Report", icon: FileWarning, url: "/driver/report" },
@@ -54,8 +53,6 @@ export function AppSidebar() {
     | null;
   const displayName = profileData?.fullName ?? "Driver";
   const userId = profileData?.id;
-  const role = profileData?.role ?? "Driver";
-  const initials = getInitials(profileData?.fullName);
   const role = authRole ?? profileData?.role ?? "Driver";
   const initials = getInitials(profileData?.fullName);
   const normalizedRole = role.toLowerCase();

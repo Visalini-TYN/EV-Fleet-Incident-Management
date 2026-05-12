@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/auth-context";
 import { ProfileDetailDialog } from "@/features/driver/components/profile-detail-dialog";
-import { useAuth } from "@/features/auth/auth-context";
 
 /** Pulls "AB"-style initials from a full name. Falls back to "DR" (Driver). */
 function getInitials(fullName: string | undefined | null): string {
@@ -42,7 +41,7 @@ export function DashboardHeader() {
         </h2>
 
         <div className="ml-auto flex items-center gap-3">
-          {/* Theme toggle — fully functional */}
+          {/* Theme toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -55,12 +54,7 @@ export function DashboardHeader() {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          {/*
-            Notification bell — kept visible per design. The backend has a
-            notifications endpoint but we're not wiring it yet, so the bell
-            opens a small popover saying so. This avoids a dead/silent button.
-            TODO(feature): wire to /api/notifications when ready.
-          */}
+          {/* Notification bell — placeholder, no backend wired */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -76,28 +70,16 @@ export function DashboardHeader() {
               <div className="space-y-2">
                 <p className="text-sm font-medium">Notifications</p>
                 <p className="text-xs text-muted-foreground">
-                  You're all caught up. Live notifications will appear here once
-                  enabled.
+                  You're all caught up. Live notifications will appear here once enabled.
                 </p>
               </div>
             </PopoverContent>
           </Popover>
 
-          {/* Clickable avatar — opens profile detail dialog */}
+          {/* Clickable avatar — opens profile dialog */}
           <button
             type="button"
             onClick={() => setProfileDialogOpen(true)}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            aria-label="Notifications"
-          >
-            <Bell className="size-5" />
-          </Button>
-
-          <button
-            type="button"
             className="rounded-full ring-2 ring-primary/20 transition hover:ring-primary/50 focus:outline-none focus:ring-primary"
             aria-label="View profile"
           >
