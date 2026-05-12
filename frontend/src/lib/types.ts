@@ -41,6 +41,20 @@ export type IssueCategory =
   | "CHARGING_ISSUE"
   | "UNKNOWN";
 
+/** Vehicle record from GET /api/vehicles. */
+export interface Vehicle {
+  id: number;
+  userId: number | null;
+  make: string;
+  model: string;
+  licensePlate: string;
+  vin: string;
+  status: "AVAILABLE" | "ACTIVE" | "INACTIVE" | "UNDER_MAINTENANCE" | "DECOMMISSIONED";
+  yearOfManufacture: number;
+  batteryCapacityKwh: number;
+  chassisNo: string;
+}  
+
 /** Priority hint we send with the complaint. */
 export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -80,10 +94,11 @@ export interface IncidentRecord {
   workSummary: string | null;
 }
 
-/** Payload sent to POST /api/complaints. */
+/** Payload sent to POST /api/complaints.
+ * vehicleId is optional — backend auto-assigns it from the user's assigned vehicle. */
 export interface CreateIncidentRequest {
   complaintData: {
-    vehicleId: string;
+    vehicleId?: string;
     issueCategory: IssueCategory;
     description: string;
   };

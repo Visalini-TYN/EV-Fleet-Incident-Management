@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -16,7 +15,6 @@ import { documentsApi } from "@/lib/api/incidents";
 import type { IssueCategory } from "@/lib/types";
 
 export interface IncidentDraft {
-  vehicleId: string;
   issueCategory: IssueCategory;
   description: string;
   latitude: number;
@@ -25,11 +23,7 @@ export interface IncidentDraft {
 }
 
 interface IncidentFormProps {
-  /** From useAuth() — current driver's assigned vehicle. */
-  defaultVehicleId?: string;
-  /** Called once the form is valid and user clicks submit. */
   onSubmit: (draft: IncidentDraft) => void | Promise<void>;
-  /** Disable the form while a submission is in flight. */
   submitting?: boolean;
 }
 
@@ -45,8 +39,7 @@ const CATEGORIES: { value: IssueCategory; label: string }[] = [
 const MAX_FILE_SIZE_MB = 10;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "video/mp4"];
 
-export function IncidentForm({ defaultVehicleId, onSubmit, submitting }: IncidentFormProps) {
-  const [vehicleId, setVehicleId] = useState(defaultVehicleId ?? "");
+export function IncidentForm({ onSubmit, submitting }: IncidentFormProps) {
   const [category, setCategory] = useState<IssueCategory | "">("");
   const [description, setDescription] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -58,11 +51,6 @@ export function IncidentForm({ defaultVehicleId, onSubmit, submitting }: Inciden
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Keep vehicleId in sync if auth resolves after mount.
-  useEffect(() => {
-    if (defaultVehicleId && !vehicleId) setVehicleId(defaultVehicleId);
-  }, [defaultVehicleId, vehicleId]);
 
   // Object-URL cleanup for previews.
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -138,7 +126,6 @@ export function IncidentForm({ defaultVehicleId, onSubmit, submitting }: Inciden
 
   const handleSubmit = async () => {
     setFormError(null);
-    if (!vehicleId.trim()) return setFormError("Vehicle ID is required.");
     if (!category) return setFormError("Pick an issue category.");
     if (description.trim().length < 10) {
       return setFormError("Please describe the issue (at least 10 characters).");
@@ -150,12 +137,11 @@ export function IncidentForm({ defaultVehicleId, onSubmit, submitting }: Inciden
       try {
         urls = await uploadAll();
       } catch {
-        return; // upload error already shown
+        return;
       }
     }
 
     await onSubmit({
-      vehicleId: vehicleId.trim(),
       issueCategory: category as IssueCategory,
       description: description.trim(),
       latitude: coords.lat,
@@ -170,17 +156,6 @@ export function IncidentForm({ defaultVehicleId, onSubmit, submitting }: Inciden
         <CardTitle>Report an incident</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="vehicleId">Vehicle ID</Label>
-          <Input
-            id="vehicleId"
-            value={vehicleId}
-            onChange={(e) => setVehicleId(e.target.value)}
-            placeholder="e.g. EV-7789"
-            disabled={submitting}
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="category">Issue category</Label>
           <Select

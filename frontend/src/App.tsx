@@ -7,6 +7,7 @@ import Signup from "@/features/auth/pages/SignupPage";
 import Home from "@/features/auth/pages/HomePage";
 import { DriverIncidentsProvider } from "@/features/driver/hooks/use-driver-incidents";
 import DriverDashboard from "@/features/driver/pages/DriverDashboard";
+import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import "./App.css";
 
@@ -89,6 +90,16 @@ function App() {
               <RequireAuth>
                 <DriverIncidentsProvider>
                   <DriverDashboard />
+                </DriverIncidentsProvider>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/driver/report"
+            element={
+              <RequireAuth>
+                <DriverIncidentsProvider>
+                  <IncidentReportPage />
                 </DriverIncidentsProvider>
               </RequireAuth>
             }

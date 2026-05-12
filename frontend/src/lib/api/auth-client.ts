@@ -67,9 +67,14 @@ api.interceptors.response.use(
     }
 
     try {
-      const refreshResponse = await api.post<TokenResponse>(
-        REFRESH_ENDPOINT,
+      const refreshResponse = await axios.post<TokenResponse>(
+        `${baseUrl.replace(/\/$/, "")}${REFRESH_ENDPOINT}`,
         { refreshToken },
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
       );
 
       const { accessToken, refreshToken: nextRefreshToken } =
