@@ -11,7 +11,7 @@ import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
-
+import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -32,6 +32,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 function PublicOnly({ children }: { children: ReactNode }) {
   const { status } = useAuth();
+<<<<<<< HEAD
 
   if (status === "loading") {
     return null;
@@ -73,6 +74,10 @@ function RequireRole({
 
 
 
+=======
+  if (status === "loading") return null;
+  if (status === "authenticated") return <Navigate to="/driver" replace />;
+>>>>>>> 4e7aaec368fc4130cafe53d57d4599355cef2701
   return <>{children}</>;
 }
 
@@ -140,12 +145,15 @@ function App() {
           <Route
             path="/driver/history/:id"
             element={
-              <RequireRole allowedRoles={["admin"]}>
-                <AdminOnboardingPage />
-              </RequireRole>
+              <RequireAuth>
+                <DriverIncidentsProvider>
+                  <IncidentDetailPage />
+                </DriverIncidentsProvider>
+              </RequireAuth>
             }
           />
-          {/* <Route
+<<<<<<< HEAD
+          <Route
             path="/admin/vehicle"
             element={
               <RequireRole allowedRoles={["admin"]}>
@@ -153,6 +161,8 @@ function App() {
               </RequireRole>
             }
           />
+=======
+>>>>>>> 4e7aaec368fc4130cafe53d57d4599355cef2701
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
