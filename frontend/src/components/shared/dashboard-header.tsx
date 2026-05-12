@@ -6,15 +6,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Bell, HelpCircle, Moon, Sun } from "lucide-react";
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  title?: string;
+}
+
+export function DashboardHeader({ title }: DashboardHeaderProps) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-6 shrink-0">
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-white/95 backdrop-blur-sm px-6 shrink-0">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-6" />
-      <h2 className="text-xl font-bold text-primary tracking-tight">
-        FleetOps Driver
+      <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+        {title ?? "Dashboard"}
       </h2>
 
       <div className="ml-auto flex items-center gap-3">

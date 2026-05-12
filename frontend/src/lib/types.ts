@@ -134,6 +134,92 @@ export interface UploadedDocument {
 // MANAGER (owned by Teammate B — add your types below)
 // -----------------------------------------------------------------------------
 
+/**
+ * Manager dashboard statistics and metrics
+ */
+export interface DashboardStats {
+  totalIncidents: number;
+  escalatedIncidents: number;
+  vendorPerformance: number;
+  slaBreaches: number;
+  solvedIncidents: number;
+  pendingIncidents: number;
+  incidentTrend: number; // percentage change
+}
+
+/**
+ * Summary of incidents for manager queue
+ */
+export interface IncidentSummary {
+  id: string;
+  title: string;
+  status: string;
+  priority: "low" | "medium" | "high" | "critical";
+  createdAt: string;
+  driverId: string;
+  location: string;
+}
+
+/**
+ * Audit log entry
+ */
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  userId: string;
+  userRole: string;
+  timestamp: string;
+  details: string;
+  incidentId?: string;
+}
+
+/**
+ * Standard API response wrapper
+ */
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
+/**
+ * Manager decision types
+ */
+export type ManagerDecision = "APPROVE" | "REJECT" | "RETRY" | "ESCALATE";
+
+/**
+ * Complaint assignment request
+ */
+export interface AssignComplaintRequest {
+  complaintId: number;
+  vendorId: number;
+}
+
+/**
+ * Complaint status update request
+ */
+export interface UpdateStatusRequest {
+  complaintId: number;
+  status: IncidentStatus;
+}
+
+/**
+ * Complaint resolution request
+ */
+export interface ResolveComplaintRequest {
+  complaintId: number;
+  resolved: boolean;
+  resolutionRemarks: string;
+}
+
+/**
+ * Manager decision request
+ */
+export interface ManagerDecisionRequest {
+  complaintId: number;
+  managerDecision: ManagerDecision;
+}
+
 // -----------------------------------------------------------------------------
 // VENDOR (owned by Teammate C — add your types below)
 // -----------------------------------------------------------------------------
