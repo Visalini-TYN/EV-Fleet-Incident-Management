@@ -133,12 +133,7 @@ export default function DriverDashboard() {
                   <Field label="License plate" value={vehicle.licensePlate} mono />
                   <Field label="Year" value={vehicle.yearOfManufacture} />
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Status
-                    </p>
-                    <Badge variant="outline" className="mt-1">
-                      {vehicle.status}
-                    </Badge>
+                  
                   </div>
 
                   <Field label="VIN" value={vehicle.vin} mono />

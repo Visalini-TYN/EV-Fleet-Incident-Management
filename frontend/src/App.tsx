@@ -5,49 +5,28 @@ import { useAuth } from "@/features/auth/auth-context";
 import Login from "@/features/auth/pages/LoginPage";
 import Signup from "@/features/auth/pages/SignupPage";
 import Home from "@/features/auth/pages/HomePage";
-import AdminOnboardingPage from "@/features/auth/pages/admin/AdminOnboardingPage";
 import { DriverIncidentsProvider } from "@/features/driver/hooks/use-driver-incidents";
 import DriverDashboard from "@/features/driver/pages/DriverDashboard";
 import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
+import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
-import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
 
 
 function AuthGate() {
-  const { status, role } = useAuth();
-  const normalizedRole = role?.toLowerCase();
-
-  if (status === "loading") {
-    return null;
-  }
-
-  console.log("Auth role:", role);
-
-
-
-  if (status !== "authenticated") {
-    return <Navigate to="/login" replace />;
-  }
-
-  return normalizedRole === "driver" ? (
+  const { status } = useAuth();
+  if (status === "loading") return null;
+  return status === "authenticated" ? (
     <Navigate to="/driver" replace />
   ) : (
-    <Navigate to="/home" replace />
+    <Navigate to="/login" replace />
   );
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { status } = useAuth();
-
-  if (status === "loading") {
-    return null;
-  }
-
-  if (status === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (status === "loading") return null;
+  if (status === "unauthenticated") return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -76,11 +55,6 @@ function RequireRole({
 }) {
   const { status, role } = useAuth();
   const normalizedRole = role?.toLowerCase();
-  // Treat vendor_admin (and variants) as admin per Home page logic.
-  const normalizedRoleCanonical =
-    normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin"
-      ? "admin"
-      : normalizedRole;
   const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
 
   if (status === "loading") {
@@ -93,7 +67,7 @@ function RequireRole({
 
   console.log("RequireRole role:", role);
 
-  if (!normalizedRoleCanonical || !allowedRolesNormalized.includes(normalizedRoleCanonical)) {
+  if (!normalizedRole || !allowedRolesNormalized.includes(normalizedRole)) {
     return <Navigate to={redirectTo} replace />;
   }
 
@@ -136,11 +110,11 @@ function App() {
           <Route
             path="/driver"
             element={
-              <RequireRole allowedRoles={["driver"]}>
+              <RequireAuth>
                 <DriverIncidentsProvider>
                   <DriverDashboard />
                 </DriverIncidentsProvider>
-              </RequireRole>
+              </RequireAuth>
             }
           />
           <Route
@@ -156,22 +130,22 @@ function App() {
           <Route
             path="/driver/history"
             element={
-              <RequireRole allowedRoles={["driver"]}>
+              <RequireAuth>
                 <DriverIncidentsProvider>
                   <DriverHistoryPage />
                 </DriverIncidentsProvider>
-              </RequireRole>
+              </RequireAuth>
             }
           />
           <Route
-            path="/admin/onboarding"
+            path="/driver/history/:id"
             element={
               <RequireRole allowedRoles={["admin"]}>
                 <AdminOnboardingPage />
               </RequireRole>
             }
           />
-          <Route
+          {/* <Route
             path="/admin/vehicle"
             element={
               <RequireRole allowedRoles={["admin"]}>
