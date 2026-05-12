@@ -5,6 +5,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useAuth } from "@/features/auth/auth-context";
+import { ProfileDetailDialog } from "@/features/driver/components/profile-detail-dialog";
 import { useAuth } from "@/features/auth/auth-context";
 
 /** Pulls "AB"-style initials from a full name. Falls back to "DR" (Driver). */
@@ -19,6 +26,8 @@ function getInitials(fullName: string | undefined | null): string {
 export function DashboardHeader() {
   const { theme, setTheme } = useTheme();
   const { profile } = useAuth();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
   const profileData = profile as { fullName?: string } | null;
   const initials = getInitials(profileData?.fullName);
   const displayName = profileData?.fullName ?? "Driver";
@@ -46,6 +55,38 @@ export function DashboardHeader() {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
+          {/*
+            Notification bell — kept visible per design. The backend has a
+            notifications endpoint but we're not wiring it yet, so the bell
+            opens a small popover saying so. This avoids a dead/silent button.
+            TODO(feature): wire to /api/notifications when ready.
+          */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Notifications"
+              >
+                <Bell className="size-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Notifications</p>
+                <p className="text-xs text-muted-foreground">
+                  You're all caught up. Live notifications will appear here once
+                  enabled.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Clickable avatar — opens profile detail dialog */}
+          <button
+            type="button"
+            onClick={() => setProfileDialogOpen(true)}
           <Button
             variant="ghost"
             size="icon"
@@ -69,6 +110,11 @@ export function DashboardHeader() {
           </button>
         </div>
       </header>
+
+      <ProfileDetailDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </>
   );
 }
