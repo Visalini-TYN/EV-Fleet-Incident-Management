@@ -22,9 +22,16 @@ import {
 import { useAuth } from "@/features/auth/auth-context";
 
 const navItems = [
+const driverNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/driver" },
   { title: "Incident Report", icon: FileWarning, url: "/driver/report" },
   { title: "History", icon: History, url: "/driver/history" },
+];
+
+const adminNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/home" },
+  { title: "Onboarding", icon: FileWarning, url: "/admin/onboarding" },
+  { title: "Vehicle", icon: History, url: "/admin/vehicle" },
 ];
 
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */
@@ -39,7 +46,7 @@ function getInitials(fullName: string | undefined | null): string {
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, role: authRole } = useAuth();
 
   // Loose narrowing — profile is typed as `unknown` in the auth context.
   const profileData = profile as
@@ -49,12 +56,17 @@ export function AppSidebar() {
   const userId = profileData?.id;
   const role = profileData?.role ?? "Driver";
   const initials = getInitials(profileData?.fullName);
+  const role = authRole ?? profileData?.role ?? "Driver";
+  const initials = getInitials(profileData?.fullName);
+  const normalizedRole = role.toLowerCase();
+  const navItems = normalizedRole === "admin" ? adminNavItems : driverNavItems;
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     // Hard reload so AuthProvider re-evaluates from scratch.
     window.location.href = "/login";
+    window.location.reload();
   };
 
   return (

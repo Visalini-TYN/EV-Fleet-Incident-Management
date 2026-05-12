@@ -5,23 +5,34 @@ import { useAuth } from "@/features/auth/auth-context";
 import Login from "@/features/auth/pages/LoginPage";
 import Signup from "@/features/auth/pages/SignupPage";
 import Home from "@/features/auth/pages/HomePage";
+import AdminOnboardingPage from "@/features/auth/pages/admin/AdminOnboardingPage";
 import { DriverIncidentsProvider } from "@/features/driver/hooks/use-driver-incidents";
 import DriverDashboard from "@/features/driver/pages/DriverDashboard";
 import IncidentReportPage from "@/features/driver/pages/IncidentReportPage";
 import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import "./App.css";
 
+
 function AuthGate() {
-  const { status } = useAuth();
+  const { status, role } = useAuth();
+  const normalizedRole = role?.toLowerCase();
 
   if (status === "loading") {
     return null;
   }
 
-  return status === "authenticated" ? (
+  console.log("Auth role:", role);
+
+
+
+  if (status !== "authenticated") {
+    return <Navigate to="/login" replace />;
+  }
+
+  return normalizedRole === "driver" ? (
     <Navigate to="/driver" replace />
   ) : (
-    <Navigate to="/login" replace />
+    <Navigate to="/home" replace />
   );
 }
 
@@ -49,6 +60,38 @@ function PublicOnly({ children }: { children: ReactNode }) {
   if (status === "authenticated") {
     return <Navigate to="/driver" replace />;
   }
+
+  return <>{children}</>;
+}
+
+function RequireRole({
+  children,
+  allowedRoles,
+  redirectTo = "/home",
+}: {
+  children: ReactNode;
+  allowedRoles: string[];
+  redirectTo?: string;
+}) {
+  const { status, role } = useAuth();
+  const normalizedRole = role?.toLowerCase();
+  const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "unauthenticated") {
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log("RequireRole role:", role);
+
+  if (!normalizedRole || !allowedRolesNormalized.includes(normalizedRole)) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+
 
   return <>{children}</>;
 }
@@ -87,11 +130,11 @@ function App() {
           <Route
             path="/driver"
             element={
-              <RequireAuth>
+              <RequireRole allowedRoles={["driver"]}>
                 <DriverIncidentsProvider>
                   <DriverDashboard />
                 </DriverIncidentsProvider>
-              </RequireAuth>
+              </RequireRole>
             }
           />
           <Route
@@ -107,13 +150,29 @@ function App() {
           <Route
             path="/driver/history"
             element={
-              <RequireAuth>
+              <RequireRole allowedRoles={["driver"]}>
                 <DriverIncidentsProvider>
                   <DriverHistoryPage />
                 </DriverIncidentsProvider>
-              </RequireAuth>
+              </RequireRole>
             }
           />
+          <Route
+            path="/admin/onboarding"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminOnboardingPage />
+              </RequireRole>
+            }
+          />
+          {/* <Route
+            path="/admin/vehicle"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminVehiclePage />
+              </RequireRole>
+            }
+          /> */}
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

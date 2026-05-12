@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/auth-context";
 import { ProfileDetailDialog } from "@/features/driver/components/profile-detail-dialog";
+import { useAuth } from "@/features/auth/auth-context";
 
 /** Pulls "AB"-style initials from a full name. Falls back to "DR" (Driver). */
 function getInitials(fullName: string | undefined | null): string {
@@ -86,6 +87,17 @@ export function DashboardHeader() {
           <button
             type="button"
             onClick={() => setProfileDialogOpen(true)}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label="Notifications"
+          >
+            <Bell className="size-5" />
+          </Button>
+
+          <button
+            type="button"
             className="rounded-full ring-2 ring-primary/20 transition hover:ring-primary/50 focus:outline-none focus:ring-primary"
             aria-label="View profile"
           >

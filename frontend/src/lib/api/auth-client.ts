@@ -23,9 +23,6 @@ const getTokensFromResponse = (payload: TokenResponse) => {
 
 export const api = axios.create({
   baseURL: baseUrl.replace(/\/$/, ""),
-  headers: {
-    "ngrok-skip-browser-warning": "true",
-  },
 });
 
 api.interceptors.request.use((config) => {

@@ -1,16 +1,26 @@
-import React from "react";
 import AuthorizationForm from "@/features/auth/components/authorization-form";
+import { useAuth } from "@/features/auth/auth-context";
+import ApprovalSuccessPage from "@/features/auth/pages/admin/ApprovalSuccessPage";
+import HomeforAdmin from "./admin/HomeforAdmin";
 
-type Props = {}
+export default function Home() {
+  const { status, role } = useAuth();
+  const normalizedRole = role?.toLowerCase();
 
-const Home = (props: Props) => {
+  if (status === "loading") {
+    return null;
+  }
 
-    
-  return (
-   <>
-     <AuthorizationForm />
-   </>
-  )
+  if (normalizedRole === "admin") {
+    return <HomeforAdmin />;
+  }
+
+  if (normalizedRole === "driver") {
+    return <ApprovalSuccessPage />;
+  }
+
+
+
+
+  return <AuthorizationForm />;
 }
-
-export default Home
