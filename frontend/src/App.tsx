@@ -15,12 +15,11 @@ import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
 import AdminVehicleComplaintsPage from "./features/auth/pages/admin/AdminVehicleComplaintsPage";
 import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage";
 import ActiveIncidentsPage from "./features/auth/pages/manager/ActiveIncidentsPage";
-import AuditLogPage from "./features/auth/pages/manager/AuditLogPage";
+import AuditLogsPage from "./features/auth/pages/manager/AuditLogsPage";
 import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDetailPage";
 import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
 import ManagerVehiclePage from "./features/auth/pages/manager/ManagerVehiclePage";
 import VehicleComplaintsPage from "./features/auth/pages/manager/VehicleComplaintsPage";
-import AuditLogsPage from "./features/auth/pages/manager/AuditLogsPage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -221,7 +220,7 @@ function App() {
             path="/manager/audit"
             element={
               <RequireRole allowedRoles={["manager"]}>
-                <AuditLogPage />
+                <AuditLogsPage />
               </RequireRole>
             }
           />
