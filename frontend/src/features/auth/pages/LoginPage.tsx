@@ -100,11 +100,11 @@ const Login = () => {
             <div className="px-8 pt-8 pb-6 flex flex-col items-center text-center">
 
               <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-xl bg-blue-600 text-white">
-                <Car size={32} />
+              <img src="/Fleetops.png" alt="FleetOps Logo" />
               </div>
 
               <h1 className="text-3xl font-bold text-blue-700 mb-1">
-                VoltTrack Fleet
+               FleetOps
               </h1>
 
               <p className="text-sm text-muted-foreground">

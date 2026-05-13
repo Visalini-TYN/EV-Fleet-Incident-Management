@@ -139,7 +139,7 @@ const Signup = () => {
               </div>
 
               <h1 className="text-3xl font-bold text-blue-700">
-                EV Fleet Incident Management
+               FleetOps EV Fleet Incident Management
               </h1>
 
               <p className="text-muted-foreground mt-2">
