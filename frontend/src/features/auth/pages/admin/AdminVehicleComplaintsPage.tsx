@@ -177,7 +177,7 @@ export default function AdminVehicleComplaintsPage() {
                         return (
                           <TableRow
                             key={incident.id}
-                              onClick={() => navigate(`/manager/incident/INC-${incident.id}/audit-logs`)}
+                            onClick={() => navigate(`/admin/incident/INC-${incident.id}/audit-logs`)}
                             className="cursor-pointer border-b transition-colors hover:bg-blue-50"
                           >
                             <TableCell className="px-6 py-4 font-semibold">

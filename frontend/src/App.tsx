@@ -20,6 +20,7 @@ import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDet
 import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
 import ManagerVehiclePage from "./features/auth/pages/manager/ManagerVehiclePage";
 import VehicleComplaintsPage from "./features/auth/pages/manager/VehicleComplaintsPage";
+import NotFoundPage from "./features/auth/pages/NotFoundPage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -240,6 +241,15 @@ function App() {
               </RequireRole>
             }
           />
+          <Route
+            path="/admin/incident/:id/audit-logs"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AuditLogsPage />
+              </RequireRole>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
