@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react"
 import {
   AlertTriangle,
-  Download,
-  Filter,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -27,41 +25,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import ManagerLayout from "./ManagerLayout"
-const metrics = [
-  {
-    title: "Total Incidents",
-    value: "1,284",
-    subtitle: "+12%",
-    footer: "",
-    badge: true,
-  },
-  {
-    title: "Escalated",
-    value: "42",
-    footer: "Action required",
-    dot: "bg-rose-500",
-  },
-  {
-    title: "Vendor Perf.",
-    value: "94.2%",
-    footer: "Average Rating",
-  },
-  {
-    title: "SLA Breaches",
-    value: "05",
-    footer: "Critical threshold",
-  },
-  {
-    title: "Solved",
-    value: "1,102",
-    footer: "86% Success Rate",
-  },
-  {
-    title: "Pending",
-    value: "135",
-    footer: "Currently in queue",
-  },
-]
 
 const getTimeElapsed = (createdAt: string) => {
   const start = new Date(createdAt).getTime()
@@ -71,19 +34,6 @@ const getTimeElapsed = (createdAt: string) => {
   const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
   const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
   return diffHrs > 0 ? `${diffHrs}h ${diffMins}m` : `${diffMins}m`
-}
-
-const getPriorityStyle = (priority: string) => {
-  switch (priority) {
-    case "HIGH":
-      return "bg-rose-50 text-rose-600 border border-rose-100"
-    case "MEDIUM":
-      return "bg-orange-50 text-orange-600 border border-orange-100"
-    case "LOW":
-      return "bg-slate-100 text-slate-600"
-    default:
-      return "bg-slate-100 text-slate-600"
-  }
 }
 
 const getStatusStyle = (status: string) => {
@@ -135,50 +85,6 @@ export default function ActiveIncidentsPage() {
           </p>
         </header>
 
-        {/* Metrics */}
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {metrics.map((metric) => (
-            <Card
-              key={metric.title}
-              className="min-h-[200px] rounded-xl border border-slate-200 shadow-sm"
-            >
-              <CardContent className="flex h-full flex-col justify-between p-6">
-                <div>
-                  <div className="mb-4 flex items-start justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      {metric.title}
-                    </span>
-
-                    {metric.badge && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                        {metric.subtitle}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-4xl font-bold text-slate-900">
-                      {metric.value}
-                    </h2>
-
-                    {metric.dot && (
-                      <span
-                        className={`h-2 w-2 rounded-full ${metric.dot}`}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {metric.footer && (
-                  <p className="text-xs font-medium text-slate-500">
-                    {metric.footer}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-
         {/* Incident Table */}
         <section>
           <Card className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
@@ -192,24 +98,6 @@ export default function ActiveIncidentsPage() {
                 <p className="mt-1 text-sm text-slate-500">
                   Real-time feed of incidents requiring immediate intervention.
                 </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="rounded-lg border-slate-200 bg-white"
-                >
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="rounded-lg border-slate-200 bg-white"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
               </div>
             </div>
 

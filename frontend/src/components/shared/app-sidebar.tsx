@@ -35,7 +35,6 @@ const adminNavItems = [
 
 const managerNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/manager" },
-  { title: "Active Incidents", icon: FileWarning, url: "/manager/active" },
   { title: "Vehicle", icon: History, url: "/manager/vehicle" },
 ];
 

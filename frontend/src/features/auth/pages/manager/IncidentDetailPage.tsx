@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -34,6 +34,110 @@ import { vehiclesApi } from "@/lib/api/vehicles";
 import { managerApi } from "@/lib/api/manager";
 import { api } from "@/lib/api/auth-client";
 import type { IncidentRecord, AiChatMessage, IncidentDataPayload, Vehicle } from "@/lib/types";
+
+const getFullName = (value: unknown) => {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const directName =
+    record.fullName ||
+    record.name ||
+    record.driverName ||
+    record.assignedDriverName ||
+    record.userName;
+
+  if (typeof directName === "string" && directName.trim()) {
+    return directName;
+  }
+
+  const firstName = typeof record.firstName === "string" ? record.firstName : "";
+  const lastName = typeof record.lastName === "string" ? record.lastName : "";
+  const combinedName = [firstName, lastName].filter(Boolean).join(" ").trim();
+
+  return combinedName || null;
+};
+
+const getDriverNameFromVehicle = (vehicle: Vehicle | null) => {
+  if (!vehicle) return null;
+
+  const vehicleRecord = vehicle as Vehicle &
+    Record<string, unknown> & {
+      user?: unknown;
+      assignedUser?: unknown;
+      customer?: unknown;
+      owner?: unknown;
+    };
+
+  return (
+    getFullName(vehicleRecord) ||
+    getFullName(vehicleRecord.assignedDriver) ||
+    getFullName(vehicleRecord.driver) ||
+    getFullName(vehicleRecord.user) ||
+    getFullName(vehicleRecord.assignedUser) ||
+    getFullName(vehicleRecord.customer) ||
+    getFullName(vehicleRecord.owner)
+  );
+};
+
+const formatMessageLabel = (key: string) =>
+  key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const parseJsonMessage = (message: string) => {
+  try {
+    const parsed = JSON.parse(message);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+function ChatMessageContent({ message }: { message: string }) {
+  const parsedMessage = parseJsonMessage(message);
+
+  if (!parsedMessage) {
+    return (
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
+        {message}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4 text-sm leading-relaxed text-gray-600">
+      {Object.entries(parsedMessage)
+        .filter(([key]) => key !== "confidence")
+        .map(([key, value]) => {
+          let content: ReactNode = null;
+
+          if (Array.isArray(value)) {
+            content = (
+              <ul className="list-disc space-y-1 pl-5">
+                {value.map((item, itemIndex) => (
+                  <li key={`${key}-${itemIndex}`}>{String(item)}</li>
+                ))}
+              </ul>
+            );
+          } else if (value !== null && value !== undefined) {
+            content = <p>{String(value)}</p>;
+          }
+
+          if (!content) return null;
+
+          return (
+            <div key={key} className="space-y-1">
+              <p className="font-semibold text-gray-900">
+                {formatMessageLabel(key)}
+              </p>
+              {content}
+            </div>
+          );
+        })}
+    </div>
+  );
+}
 
 export default function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -232,6 +336,10 @@ export default function IncidentDetailPage() {
 
   const vId = incident.vehicleId || payload?.vehicleId || "Unknown Vehicle";
   const desc = payload?.description || payload?.issueDescription || "No description provided.";
+  const driverDisplayName =
+    getDriverNameFromVehicle(vehicle) ||
+    driver?.fullName ||
+    `Driver ${incident.customerId}`;
 
   return (
     <ManagerLayout>
@@ -331,7 +439,7 @@ export default function IncidentDetailPage() {
 
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {driver?.fullName || `Driver ${incident.customerId}`}
+                      {driverDisplayName}
                     </h3>
 
                     <p className="text-gray-600">
@@ -418,13 +526,11 @@ export default function IncidentDetailPage() {
                               msg.sender === "USER" ? "text-gray-900" : "text-blue-600"
                             }`}
                           >
-                            {msg.sender === "USER" ? `Driver ${incident.customerId}` : "FleetCore AI"}
+                            {msg.sender === "USER" ? driverDisplayName : "FleetCore AI"}
                           </p>
 
                           <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                            <p className="text-sm italic leading-relaxed text-gray-600">
-                              {msg.message}
-                            </p>
+                            <ChatMessageContent message={msg.message} />
                           </div>
                         </div>
                       </div>

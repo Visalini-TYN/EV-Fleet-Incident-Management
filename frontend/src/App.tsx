@@ -17,7 +17,6 @@ import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage
 import ActiveIncidentsPage from "./features/auth/pages/manager/ActiveIncidentsPage";
 import AuditLogsPage from "./features/auth/pages/manager/AuditLogsPage";
 import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDetailPage";
-import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
 import ManagerVehiclePage from "./features/auth/pages/manager/ManagerVehiclePage";
 import VehicleComplaintsPage from "./features/auth/pages/manager/VehicleComplaintsPage";
 import NotFoundPage from "./features/auth/pages/NotFoundPage";
@@ -187,14 +186,6 @@ function App() {
           {/* Manager routes */}
           <Route
             path="/manager"
-            element={
-              <RequireRole allowedRoles={["manager"]}>
-                <OverviewDashboard />
-              </RequireRole>
-            }
-          />
-          <Route
-            path="/manager/active"
             element={
               <RequireRole allowedRoles={["manager"]}>
                 <ActiveIncidentsPage />

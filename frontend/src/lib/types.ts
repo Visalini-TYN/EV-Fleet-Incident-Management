@@ -64,6 +64,10 @@ export interface Vehicle {
   yearOfManufacture: number;
   batteryCapacityKwh: number;
   chassisNo: string;
+  assignedDriverName?: string;
+  driverName?: string;
+  driver?: { fullName?: string } | null;
+  assignedDriver?: { fullName?: string } | null;
 }  
 
 /** Priority hint we send with the complaint. */

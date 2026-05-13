@@ -6,9 +6,10 @@ import { DashboardHeader } from "@/components/shared/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { incidentsApi, parseIncidentData } from "@/lib/api/incidents";
+import { vehiclesApi } from "@/lib/api/vehicles";
 import { IncidentDetailsCard } from "../components/incident-details-card";
 import { AiChatPanel } from "../components/ai-chat-panel";
-import type { IncidentRecord } from "@/lib/types";
+import type { IncidentRecord, Vehicle } from "@/lib/types";
 
 /** Sanity-check the response shape before trusting it.
  *  We accept anything that's an object with an `id` field — be it number or
@@ -19,11 +20,20 @@ function isValidIncident(x: unknown): x is IncidentRecord {
   return obj.id !== undefined && obj.id !== null;
 }
 
+const getDriverNameFromVehicle = (vehicle: Vehicle | null) =>
+  vehicle?.assignedDriverName ||
+  vehicle?.driverName ||
+  vehicle?.assignedDriver?.fullName ||
+  vehicle?.driver?.fullName ||
+  null;
+
 export default function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [incident, setIncident] = useState<IncidentRecord | null>(null);
+  const [driverName, setDriverName] = useState<string | null>(null);
+  const [driverNameLoading, setDriverNameLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +51,8 @@ export default function IncidentDetailPage() {
     setLoading(true);
     setError(null);
     setIncident(null);
+    setDriverName(null);
+    setDriverNameLoading(false);
 
     incidentsApi
       .getById(numericId)
@@ -52,7 +64,30 @@ export default function IncidentDetailPage() {
           setError("Incident response was malformed.");
           setIncident(null);
         } else {
-          setIncident(fresh as IncidentRecord);
+          const freshIncident = fresh as IncidentRecord;
+          setIncident(freshIncident);
+
+          const payload = parseIncidentData(freshIncident.data);
+          const vehicleId = freshIncident.vehicleId || payload?.vehicleId;
+          const numericVehicleId = vehicleId ? Number(vehicleId) : NaN;
+
+          if (Number.isFinite(numericVehicleId)) {
+            setDriverNameLoading(true);
+            vehiclesApi
+              .getById(numericVehicleId)
+              .then((vehicle) => {
+                if (cancelled) return;
+                setDriverName(getDriverNameFromVehicle(vehicle));
+              })
+              .catch((e) => {
+                if (cancelled) return;
+                console.error("Failed to fetch vehicle driver details:", e);
+                setDriverName(null);
+              })
+              .finally(() => {
+                if (!cancelled) setDriverNameLoading(false);
+              });
+          }
         }
         setLoading(false);
       })
@@ -106,7 +141,11 @@ export default function IncidentDetailPage() {
           {!loading && !error && incident && (
             <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2">
               <div className="min-h-0">
-                <IncidentDetailsCard incident={incident} />
+                <IncidentDetailsCard
+                  incident={incident}
+                  driverName={driverName}
+                  driverNameLoading={driverNameLoading}
+                />
               </div>
               <div className="min-h-0">
                 <AiChatPanel

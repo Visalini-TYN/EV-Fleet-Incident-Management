@@ -11,6 +11,8 @@ import type { IncidentRecord, IncidentStatus } from "@/lib/types";
 
 interface IncidentDetailsCardProps {
   incident: IncidentRecord;
+  driverName?: string | null;
+  driverNameLoading?: boolean;
 }
 
 const STATUS_VARIANT: Record<
@@ -51,7 +53,11 @@ const CATEGORY_LABEL: Record<string, string> = {
   SOFTWARE_GLITCH: "Software glitch",
 };
 
-export function IncidentDetailsCard({ incident }: IncidentDetailsCardProps) {
+export function IncidentDetailsCard({
+  incident,
+  driverName,
+  driverNameLoading = false,
+}: IncidentDetailsCardProps) {
   const payload = parseIncidentData(incident.data);
   const description =
   payload?.description ?? payload?.issueDescription ?? "(no description)";
@@ -85,6 +91,11 @@ export function IncidentDetailsCard({ incident }: IncidentDetailsCardProps) {
           <DetailField label="Vehicle ID">
             <span className="font-mono text-sm">
               {incident.vehicleId || payload?.vehicleId || "—"}
+            </span>
+          </DetailField>
+          <DetailField label="Driver name">
+            <span className="text-sm">
+              {driverNameLoading ? "Loading..." : driverName || "—"}
             </span>
           </DetailField>
           <DetailField label="Assigned vendor">
