@@ -1,9 +1,4 @@
-// =============================================================================
-// Incidents API (driver-facing complaints endpoints)
-// Owned by: Driver (You)
-// =============================================================================
-
-import { request } from "./client";
+import { request, unwrapPage } from "./client";
 import type {
   AiChatMessage,
   AiQueryRequest,
@@ -15,11 +10,6 @@ import type {
   UploadedDocument,
 } from "../types";
 
-/**
- * Parse the stringified `data` blob on an incident record.
- * Backend stores user inputs as a JSON string here — safer than crashing
- * if it's malformed.
- */
 export function parseIncidentData(raw: string | null | undefined): IncidentDataPayload | null {
   if (!raw) return null;
   try {
@@ -30,17 +20,15 @@ export function parseIncidentData(raw: string | null | undefined): IncidentDataP
 }
 
 export const incidentsApi = {
-  /**
-   * POST /api/complaints
-   * Driver submits a new complaint.
-   * Backend returns a confirmation string, not the created record — caller
-   * should refetch the list after this resolves.
-   */
+
   create: (payload: CreateIncidentRequest): Promise<string> =>
     request<string>("/api/complaints", { method: "POST", body: payload }),
 
-  /** GET /api/complaints — list complaints scoped to the logged-in user. */
-  getAll: (): Promise<IncidentRecord[]> => request<IncidentRecord[]>("/api/complaints"),
+ 
+  getAll: async (): Promise<IncidentRecord[]> => {
+    const raw = await request<unknown>("/api/complaints");
+    return unwrapPage<IncidentRecord>(raw);
+  },
 
   /** POST /api/complaints/details — fetch a single complaint. */
   getById: (complaintId: number): Promise<IncidentRecord> =>
@@ -49,12 +37,6 @@ export const incidentsApi = {
       body: { complaintId },
     }),
 
-  /**
-   * POST /api/complaints/ai-chat
-   * Returns the clean conversational chat history (AI + USER messages
-   * interleaved in chronological order). This is the recommended way to
-   * render the AI chat — no more regex parsing of workSummary.
-   */
   getAiChat: (complaintId: number): Promise<AiChatMessage[]> =>
     request<AiChatMessage[]>("/api/complaints/ai-chat", {
       method: "POST",
@@ -63,12 +45,7 @@ export const incidentsApi = {
 };
 
 export const aiApi = {
-  /**
-   * POST /api/ai/queries
-   * @deprecated Follow-up questions now go through workflowApi.submitDriverResponse
-   * with continueAi=true and userFollowUp set. This endpoint is kept around for
-   * compatibility but no longer used by the chat panel.
-   */
+
   createQuery: (payload: AiQueryRequest): Promise<AiQueryResponse> =>
     request<AiQueryResponse>("/api/ai/queries", { method: "POST", body: payload }),
 };

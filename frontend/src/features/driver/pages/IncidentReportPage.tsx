@@ -67,11 +67,7 @@ export default function IncidentReportPage() {
   };
 
   return (
-    /*
-      Constrain the whole sidebar layout to viewport height so its children
-      can use flex/overflow to scroll internally without the page itself
-      scrolling.
-    */
+    
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="h-screen overflow-hidden">

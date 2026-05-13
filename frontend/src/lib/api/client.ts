@@ -1,18 +1,6 @@
-// =============================================================================
-// Shared API client
-// Written once. Frozen after teammate A wires in real auth. Don't modify
-// the public surface (request, ApiError) without team agreement.
-// =============================================================================
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
-/**
- * Token accessor. Teammate A's auth module should replace this with a real
- * implementation that reads from their auth context / localStorage.
- *
- * TODO(integration): replace with real token source once auth lands.
- * Temporary: reads from localStorage so login flow can drop a token there.
- */
 function getAuthToken(): string | null {
   try {
     return localStorage.getItem("accessToken");
@@ -34,28 +22,15 @@ export class ApiError extends Error {
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
-  /** Set to true to send FormData (multipart). Body must be a FormData instance. */
   multipart?: boolean;
-  /** Override or extend headers. */
   headers?: Record<string, string>;
 }
 
 /**
  * Decides whether a parsed response is an envelope wrapper like
  *   { message: "...", data: [...] }
- * (which we want to unwrap) versus a real entity that just happens to have
- * a `data` field as part of its own schema (like our incident records,
- * which carry a stringified JSON blob in a field called `data`).
- *
- * Envelopes are objects whose keys are roughly { data + message/success/status }
- * and nothing else. Real entities carry schema fields like `id`, `createdAt`,
- * `status` (the entity's status, not the envelope's), etc.
- *
- * Heuristic: it's an envelope only when EITHER
- *   - the only keys are `data` plus a subset of {message, success}, OR
- *   - there is no `id` field at the top level.
- *
- * If the top level has an `id`, it's almost certainly the entity itself.
+ * (which we want to unwrap) vs a real entity that just happens to have
+ * a `data` field as part of its own schema.
  */
 function isEnvelope(parsed: object): boolean {
   const obj = parsed as Record<string, unknown>;
@@ -67,15 +42,31 @@ function isEnvelope(parsed: object): boolean {
 }
 
 /**
- * Core request helper.
- * Handles:
- * - Base URL prefixing
- * - Bearer token injection
- * - ngrok browser warning bypass
- * - JSON body serialization (or multipart passthrough)
- * - Error envelope parsing
- * - Response unwrapping (handles both {message,data} and raw shapes)
+ * Unwrap a Spring Boot `Page<T>` response to its `content` array.
+ *
+ * Spring's Page<T> looks like:
+ *   { content: T[], pageable: {...}, totalPages, totalElements,
+ *     last, first, number, numberOfElements, size, empty, sort }
+ *
+ * If the response is already a plain array, returns it unchanged. If it's
+ * a Page<T>, returns just the content. Otherwise returns an empty array
+ * so callers can safely use `.find/.filter` without crashing.
+ *
+ * Use this in any API method that talks to a paginated list endpoint.
  */
+export function unwrapPage<T>(raw: unknown): T[] {
+  if (Array.isArray(raw)) return raw as T[];
+  if (
+    raw &&
+    typeof raw === "object" &&
+    "content" in raw &&
+    Array.isArray((raw as { content?: unknown }).content)
+  ) {
+    return (raw as { content: T[] }).content;
+  }
+  return [];
+}
+
 export async function request<T = unknown>(
   path: string,
   options: RequestOptions = {},
@@ -96,7 +87,6 @@ export async function request<T = unknown>(
     body: multipart ? (body as BodyInit) : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // Parse response (might be JSON, plain string, or empty).
   const contentType = res.headers.get("content-type") ?? "";
   let parsed: unknown = null;
   if (contentType.includes("application/json")) {
@@ -107,7 +97,6 @@ export async function request<T = unknown>(
   }
 
   if (!res.ok) {
-    // Backend error shape per onboarding doc: { status, error, message, timestamp }
     const message =
       (parsed && typeof parsed === "object" && "message" in parsed
         ? String((parsed as { message?: unknown }).message ?? "")
@@ -115,7 +104,6 @@ export async function request<T = unknown>(
     throw new ApiError(res.status, message, parsed);
   }
 
-  // Success — unwrap if it looks like a true envelope, else return as-is.
   if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && isEnvelope(parsed)) {
     return (parsed as { data: T }).data;
   }

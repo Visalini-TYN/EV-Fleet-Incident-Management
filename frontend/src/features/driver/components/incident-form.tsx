@@ -28,11 +28,12 @@ interface IncidentFormProps {
 }
 
 const CATEGORIES: { value: IssueCategory; label: string }[] = [
-  { value: "STARTING_ISSUE", label: "Starting issue" },
-  { value: "BATTERY_ISSUE", label: "Battery issue" },
-  { value: "CHARGING_ISSUE", label: "Charging issue" },
-  { value: "TIRE_ISSUE", label: "Tire issue" },
-  { value: "SOFTWARE_GLITCH", label: "Software glitch" },
+  { value: "BATTERY", label: "Battery" },
+  { value: "MOTOR", label: "Motor" },
+  { value: "SOFTWARE", label: "Software" },
+  { value: "CHARGING", label: "Charging" },
+  { value: "BRAKE", label: "Brake" },
+  { value: "TYRE", label: "Tyre" },
   { value: "UNKNOWN", label: "Other / not sure" },
 ];
 

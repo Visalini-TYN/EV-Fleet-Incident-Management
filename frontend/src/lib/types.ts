@@ -25,11 +25,12 @@ export type IncidentStatus =
 
 /** Issue categories accepted by the backend (free-string, but these are standard). */
 export type IssueCategory =
-  | "STARTING_ISSUE"
-  | "BATTERY_ISSUE"
-  | "TIRE_ISSUE"
-  | "SOFTWARE_GLITCH"
-  | "CHARGING_ISSUE"
+  | "BATTERY"
+  | "MOTOR"
+  | "SOFTWARE"
+  | "CHARGING"
+  | "BRAKE"
+  | "TYRE"
   | "UNKNOWN";
 
 /** Single message from POST /api/complaints/ai-chat. */
