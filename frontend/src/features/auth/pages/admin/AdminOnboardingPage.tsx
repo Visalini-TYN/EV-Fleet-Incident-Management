@@ -7,6 +7,7 @@ import {
   fetchVehicles,
   updateUserStatus,
   type ApprovalStatus,
+  type PaginatedResponse,
   type UserRecord,
   type VehicleRecord,
 } from "@/lib/api/admin";
@@ -34,21 +35,26 @@ const getDisplayName = (user: UserRecord) =>
 export default function AdminOnboardingPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  const loadUsers = async (status?: ApprovalStatus) => {
+  const loadUsers = async (status?: ApprovalStatus, pageNum: number = 0) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchUsers(status);
-      const nextUsers = Array.isArray(data) ? data : [];
+      console.log("Loading users with status filter:", status, "page:", pageNum);
+      const response = await fetchUsers(status, pageNum, PAGE_SIZE);
+      console.log("Fetched data:", response);
+      const nextUsers = Array.isArray(response.content) ? response.content : [];
+      console.log("Processing users:", nextUsers);
       setUsers(nextUsers);
+      setTotalPages(response.totalPages || 1);
       if (nextUsers.length > 0) {
         setSelectedUserId((prev) => {
           const stillExists = nextUsers.some((user) => user.id === prev);
@@ -58,24 +64,33 @@ export default function AdminOnboardingPage() {
         setSelectedUserId(null);
       }
     } catch (err) {
-      setError("Failed to load users.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to load users.";
+      console.error("Error loading users:", err);
+      setError(`Error: ${errorMessage}`);
       setUsers([]);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    void loadUsers(statusFilter === "ALL" ? undefined : statusFilter);
+    setPage(1);
+    void loadUsers(statusFilter === "ALL" ? undefined : statusFilter, 0);
   }, [statusFilter]);
 
   useEffect(() => {
     const loadVehicles = async () => {
       try {
+        console.log("Loading vehicles...");
         const data = await fetchVehicles();
+        console.log("Raw vehicles data:", data);
         const list = Array.isArray(data) ? data : [];
-        console.log("Vehicles fetched:", list);
-        console.log("Available vehicles:", list.filter((v) => v.status?.toUpperCase() === "AVAILABLE"));
+        console.log("Processed vehicles list:", list);
+        console.log("Total vehicles:", list.length);
+        if (list.length > 0) {
+          console.log("Sample vehicle:", list[0]);
+        }
         setVehicles(list);
         if (list.length > 0) {
           setSelectedVehicleId((prev) => prev ?? list[0].id);
@@ -88,24 +103,6 @@ export default function AdminOnboardingPage() {
 
     void loadVehicles();
   }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter]);
-
-  const filteredUsers = useMemo(() => {
-    if (statusFilter === "ALL") return users;
-    return users.filter(
-      (user) => normalizeStatus(user.approvalStatus) === statusFilter,
-    );
-  }, [users, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const pagedUsers = filteredUsers.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
 
   const selectedUser = users.find((user) => user.id === selectedUserId) || null;
   const selectedStatus = normalizeStatus(selectedUser?.approvalStatus);
@@ -122,7 +119,7 @@ export default function AdminOnboardingPage() {
     try {
       await updateUserStatus(targetId, nextStatus);
       setActionMessage(`Status updated to ${nextStatus}.`);
-      await loadUsers(statusFilter === "ALL" ? undefined : statusFilter);
+      void loadUsers(statusFilter === "ALL" ? undefined : statusFilter, page - 1);
     } catch {
       setActionMessage("Failed to update status.");
     }
@@ -137,6 +134,11 @@ export default function AdminOnboardingPage() {
     } catch {
       setActionMessage("Failed to assign vehicle.");
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    void loadUsers(statusFilter === "ALL" ? undefined : statusFilter, newPage - 1);
   };
 
   return (
@@ -188,14 +190,14 @@ export default function AdminOnboardingPage() {
                     Loading users...
                   </td>
                 </tr>
-              ) : pagedUsers.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
                   <td className="px-6 py-6 text-sm text-[#717783]" colSpan={5}>
                     No users found.
                   </td>
                 </tr>
               ) : (
-                pagedUsers.map((user) => {
+                users.map((user) => {
                   const status = normalizeStatus(user.approvalStatus);
                   const accountType =
                     user.userType?.toUpperCase() === "ORGANIZATION"
@@ -272,32 +274,32 @@ export default function AdminOnboardingPage() {
 
         <div className="flex items-center justify-between border-t border-[#c0c7d3]/20 bg-white px-6 py-4">
           <p className="text-xs text-[#717783]">
-            Showing {pagedUsers.length} of {filteredUsers.length} users
+            Showing {users.length} of page on {totalPages} total pages
           </p>
           <div className="flex items-center gap-2">
             <button
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              onClick={() => handlePageChange(Math.max(1, page - 1))}
+              disabled={page === 1}
             >
               <ChevronLeft className="h-4 w-4 text-[#717783]" />
             </button>
-            {getPageNumbers(currentPage, totalPages).map((pageNumber) => (
+            {getPageNumbers(page, totalPages).map((pageNumber) => (
               <button
                 key={pageNumber}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${pageNumber === currentPage
+                className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${pageNumber === page
                     ? "bg-[#005797] text-white"
                     : "border border-[#c0c7d3] hover:bg-[#eceef5]"
                   }`}
-                onClick={() => setPage(pageNumber)}
+                onClick={() => handlePageChange(pageNumber)}
               >
                 {pageNumber}
               </button>
             ))}
             <button
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
-              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
             >
               <ChevronRight className="h-4 w-4 text-[#717783]" />
             </button>
@@ -358,18 +360,20 @@ export default function AdminOnboardingPage() {
                     console.log("Selected vehicle:", selected);
                     setSelectedVehicleId(vehicleId);
                   }}
-                  disabled={vehicles.filter((v) => v.status?.toUpperCase() === "AVAILABLE").length === 0}
+                  disabled={vehicles.length === 0}
                 >
-                  {vehicles.filter((v) => v.status?.toUpperCase() === "AVAILABLE").length === 0 && (
-                    <option value="">No available vehicles</option>
+                  {vehicles.length === 0 && (
+                    <option value="">No vehicles available</option>
                   )}
-                  {vehicles
-                    .filter((vehicle) => vehicle.status?.toUpperCase() === "AVAILABLE")
-                    .map((vehicle) => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.make} {vehicle.model} - {vehicle.licensePlate}
-                      </option>
-                    ))}
+                  {vehicles.length > 0 && !selectedVehicleId && (
+                    <option value="">Select a vehicle</option>
+                  )}
+                  {vehicles.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.make} {vehicle.model} - {vehicle.licensePlate || vehicle.vehicleNumber} 
+                      {vehicle.status ? ` (${vehicle.status})` : ""}
+                    </option>
+                  ))}
                 </select>
               </div>
               <button

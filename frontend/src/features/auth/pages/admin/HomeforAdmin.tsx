@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AdminLayout from "@/features/auth/pages/admin/AdminLayout";
 import {
@@ -28,6 +28,7 @@ export default function HomeforAdmin() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,36 +37,24 @@ export default function HomeforAdmin() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await fetchUsers();
-        setUsers(Array.isArray(data) ? data : []);
+        const response = await fetchUsers(statusFilter === "ALL" ? undefined : statusFilter, 0, PAGE_SIZE);
+        setUsers(Array.isArray(response.content) ? response.content : []);
+        setTotalPages(response.totalPages || 1);
       } catch (err) {
         setError("Failed to load users.");
         setUsers([]);
+        setTotalPages(1);
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadUsers();
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     setPage(1);
   }, [statusFilter]);
-
-  const filteredUsers = useMemo(() => {
-    if (statusFilter === "ALL") return users;
-    return users.filter(
-      (user) => normalizeStatus(user.approvalStatus) === statusFilter,
-    );
-  }, [users, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const pagedUsers = filteredUsers.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
 
   const totalApproved = users.filter(
     (user) => normalizeStatus(user.approvalStatus) === "APPROVED",
@@ -181,14 +170,14 @@ export default function HomeforAdmin() {
                       Loading users...
                     </td>
                   </tr>
-                ) : pagedUsers.length === 0 ? (
+                ) : users.length === 0 ? (
                   <tr>
                     <td className="px-6 py-6 text-sm text-[#717783]" colSpan={5}>
                       No users found.
                     </td>
                   </tr>
                 ) : (
-                  pagedUsers.map((user) => {
+                  users.map((user) => {
                     const status = normalizeStatus(user.approvalStatus);
                     const accountType =
                       user.userType?.toUpperCase() === "ORGANIZATION"
@@ -242,20 +231,20 @@ export default function HomeforAdmin() {
 
           <div className="flex items-center justify-between border-t border-[#c0c7d3]/20 bg-white px-6 py-4">
             <p className="text-xs text-[#717783]">
-              Showing {pagedUsers.length} of {filteredUsers.length} users
+              Showing {users.length} users on page {page} of {totalPages}
             </p>
             <div className="flex items-center gap-2">
               <button
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
+                disabled={page === 1}
               >
                 <ChevronLeft className="h-4 w-4 text-[#717783]" />
               </button>
-              {getPageNumbers(currentPage, totalPages).map((pageNumber) => (
+              {getPageNumbers(page, totalPages).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${pageNumber === currentPage
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${pageNumber === page
                       ? "bg-[#005797] text-white"
                       : "border border-[#c0c7d3] hover:bg-[#eceef5]"
                     }`}
@@ -267,7 +256,7 @@ export default function HomeforAdmin() {
               <button
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
+                disabled={page === totalPages}
               >
                 <ChevronRight className="h-4 w-4 text-[#717783]" />
               </button>
