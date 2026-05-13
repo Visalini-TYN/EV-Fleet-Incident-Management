@@ -13,12 +13,16 @@ import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
 import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
 import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage";
+import ActiveIncidentsPage from "./features/auth/pages/manager/ActiveIncidentsPage";
+import AuditLogPage from "./features/auth/pages/manager/AuditLogPage";
+import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDetailPage";
+import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
 
 function AuthGate() {
   const { status } = useAuth();
   if (status === "loading") return null;
   return status === "authenticated" ? (
-    <Navigate to="/driver" replace />
+    <Navigate to="/home" replace />
   ) : (
     <Navigate to="/login" replace />
   );
@@ -165,6 +169,39 @@ function App() {
             element={
               <RequireRole allowedRoles={["admin"]}>
                 <AdminOnboardingPage/>
+              </RequireRole>
+            }
+          />
+          {/* Manager routes */}
+          <Route
+            path="/manager"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <OverviewDashboard />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/manager/active"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <ActiveIncidentsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/manager/audit"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <AuditLogPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/manager/incident/:id"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <ManagerIncidentDetailPage />
               </RequireRole>
             }
           />

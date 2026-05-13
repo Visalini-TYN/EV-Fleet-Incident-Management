@@ -33,6 +33,12 @@ const adminNavItems = [
   { title: "Vehicle", icon: History, url: "/admin/vehicle" },
 ];
 
+const managerNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/manager" },
+  { title: "Active Incidents", icon: FileWarning, url: "/manager/active" },
+  { title: "Audit Log", icon: History, url: "/manager/audit" },
+];
+
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */
 function getInitials(fullName: string | undefined | null): string {
   if (!fullName) return "DR";
@@ -61,11 +67,13 @@ export function AppSidebar() {
     normalizedRole === "admin" ||
     normalizedRole === "vendor_admin" ||
     normalizedRole === "vendor-admin";
-  const navItems = isAdmin ? adminNavItems : driverNavItems;
+  const isManager = normalizedRole === "manager";
+  const navItems = isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
 
   const displayRoleLabel = (() => {
     if (normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin") return "Vendor Admin";
     if (normalizedRole === "admin") return "Admin";
+    if (normalizedRole === "manager") return "Manager";
     if (normalizedRole === "driver") return "Driver";
     return role;
   })();

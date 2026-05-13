@@ -39,7 +39,21 @@ const getRoleFromToken = () => {
   try {
     const decoded = jwtDecode<DecodedToken>(token)
     console.log("JWT decoded:", decoded)
-    return decoded?.sub || decoded?.role || null
+    // Prefer an explicit `role` claim. Some tokens may include the role
+    // in `sub` (or other fields) — accept that only when it looks like a
+    // role string (e.g. MANAGER, ADMIN, DRIVER, vendor_admin).
+    const rawRole = decoded?.role ?? null
+    if (rawRole && typeof rawRole === "string") return rawRole.trim()
+
+    const subCandidate = decoded?.sub
+    if (subCandidate && typeof subCandidate === "string") {
+      const candidate = subCandidate.trim()
+      // Heuristic: treat the `sub` as a role only if it matches common role
+      // patterns (letters, underscores or hyphens, no @ which suggests an email).
+      if (/^[A-Za-z_\-]+$/.test(candidate)) return candidate
+    }
+
+    return null
   } catch {
     return null
   }

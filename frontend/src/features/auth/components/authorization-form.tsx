@@ -343,43 +343,6 @@ export default function AuthorizationForm() {
 
   return (
     <div className="min-h-screen bg-[#f8f9ff] text-slate-900">
-      {/* HEADER */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white px-8 shadow-sm">
-        <div className="flex items-center gap-10">
-          <h1 className="text-2xl font-bold text-[#005797]">
-            FleetCore EV
-          </h1>
-
-          <nav className="hidden items-center gap-6 md:flex">
-            <button className="text-slate-600 hover:text-[#005797]">
-              Dashboard
-            </button>
-
-            <button className="text-slate-600 hover:text-[#005797]">
-              Incidents
-            </button>
-
-            <button className="text-slate-600 hover:text-[#005797]">
-              Vehicles
-            </button>
-
-            <button className="border-b-2 border-[#005797] pb-1 font-semibold text-[#005797]">
-              Support
-            </button>
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Input
-            placeholder="Search..."
-            className="hidden w-64 rounded-full md:block"
-          />
-
-          <Bell className="cursor-pointer text-slate-600 hover:text-[#005797]" />
-
-          <UserCircle className="cursor-pointer text-slate-600 hover:text-[#005797]" />
-        </div>
-      </header>
 
       {/* MAIN */}
       <main className="mx-auto max-w-5xl px-8 py-10">

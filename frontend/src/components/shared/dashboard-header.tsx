@@ -22,7 +22,7 @@ function getInitials(fullName: string | undefined | null): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function DashboardHeader() {
+export function DashboardHeader({ title }: { title?: string }) {
   const { theme, setTheme } = useTheme();
   const { profile } = useAuth();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -37,7 +37,7 @@ export function DashboardHeader() {
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="h-6" />
         <h2 className="text-xl font-bold text-primary tracking-tight">
-          FleetOps Driver
+          {title ?? "FleetOps Driver"}
         </h2>
 
         <div className="ml-auto flex items-center gap-3">
