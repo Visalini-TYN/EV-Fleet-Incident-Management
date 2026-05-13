@@ -175,7 +175,7 @@ const Login = () => {
               </div>
 
               {/* Remember */}
-              <div className="flex items-center space-x-3">
+              {/* <div className="flex items-center space-x-3">
                 <Checkbox
                   id="remember"
                   checked={rememberMe}
@@ -188,7 +188,7 @@ const Login = () => {
                 >
                   Remember me
                 </Label>
-              </div>
+              </div> */}
 
               {/* Submit */}
               <Button
