@@ -63,9 +63,6 @@ export default function IncidentDetailPage() {
 
   const showToastAndNavigate = (text: string) => {
     setToastMessage({ type: "success", text });
-    setTimeout(() => {
-      navigate("/manager/history");
-    }, 2000);
   };
 
   const openAuditLogs = () => {

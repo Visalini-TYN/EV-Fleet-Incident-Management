@@ -73,6 +73,19 @@ const getTimeElapsed = (createdAt: string) => {
   return diffHrs > 0 ? `${diffHrs}h ${diffMins}m` : `${diffMins}m`
 }
 
+const getPriorityStyle = (priority: string) => {
+  switch (priority) {
+    case "HIGH":
+      return "bg-rose-50 text-rose-600 border border-rose-100"
+    case "MEDIUM":
+      return "bg-orange-50 text-orange-600 border border-orange-100"
+    case "LOW":
+      return "bg-slate-100 text-slate-600"
+    default:
+      return "bg-slate-100 text-slate-600"
+  }
+}
+
 const getStatusStyle = (status: string) => {
   switch (status) {
     case "ESCALATED_TO_MANAGER":
@@ -252,7 +265,7 @@ export default function ActiveIncidentsPage() {
                       >
                         <TableCell className="px-6 py-5 font-bold text-slate-900">
                           <Link
-                            to={`/manager/incident/INC-${incident.id}/audit-logs`}
+                            to={`/manager/incident/INC-${incident.id}`}
                             className="transition hover:text-[#0070c0] hover:underline"
                           >
                             INC-{incident.id}
@@ -287,10 +300,10 @@ export default function ActiveIncidentsPage() {
 
                         <TableCell className="px-6 py-5 text-right">
                           <Link
-                            to={`/manager/incident/INC-${incident.id}/audit-logs`}
+                            to={`/manager/incident/INC-${incident.id}`}
                             className="inline-flex items-center gap-1 font-bold text-[#0070c0] transition hover:underline"
                           >
-                            Audit Logs
+                            View
                             <ChevronRight className="h-3 w-3" />
                           </Link>
                         </TableCell>
