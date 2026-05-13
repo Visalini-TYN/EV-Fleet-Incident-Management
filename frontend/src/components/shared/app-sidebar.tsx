@@ -36,7 +36,7 @@ const adminNavItems = [
 const managerNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/manager" },
   { title: "Active Incidents", icon: FileWarning, url: "/manager/active" },
-  { title: "Audit Log", icon: History, url: "/manager/audit" },
+  { title: "Vehicle", icon: History, url: "/manager/vehicle" },
 ];
 
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */

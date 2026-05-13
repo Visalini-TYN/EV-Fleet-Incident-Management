@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -18,6 +19,7 @@ import AdminLayout from "./AdminLayout";
 import { vehiclesApi } from "@/lib/api/vehicles";
 
 export default function AdminVehiclePage() {
+  const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
 
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -208,7 +210,8 @@ export default function AdminVehiclePage() {
                   (vehicle: any, index: number) => (
                     <div
                       key={index}
-                      className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+                      onClick={() => navigate(`/admin/vehicle/${vehicle.id}`)}
+                      className="flex flex-col cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-[#0070c0]"
                     >
                       {/* HEADER */}
                       <div className="mb-6 flex items-start justify-between">
@@ -287,8 +290,14 @@ export default function AdminVehiclePage() {
                           </span>
                         </div>
 
-                        <button className="text-sm font-semibold text-[#005797] hover:underline">
-                          View Details
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/vehicle/${vehicle.id}`);
+                          }}
+                          className="text-sm font-semibold text-[#005797] hover:underline"
+                        >
+                          View Complaints
                         </button>
                       </div>
                     </div>

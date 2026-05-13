@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Car,
   User,
-  Info,
   Monitor,
   Zap,
   ArrowRightLeft,
@@ -67,6 +66,10 @@ export default function IncidentDetailPage() {
     setTimeout(() => {
       navigate("/manager/history");
     }, 2000);
+  };
+
+  const openAuditLogs = () => {
+    navigate(`/manager/incident/${id}/audit-logs`);
   };
 
   const handleReject = async () => {
@@ -232,7 +235,6 @@ export default function IncidentDetailPage() {
 
   const vId = incident.vehicleId || payload?.vehicleId || "Unknown Vehicle";
   const desc = payload?.description || payload?.issueDescription || "No description provided.";
-  const loc = payload?.location || "Unknown Location";
 
   return (
     <ManagerLayout>
@@ -264,6 +266,10 @@ export default function IncidentDetailPage() {
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" className="shadow-sm" onClick={openAuditLogs}>
+              Audit Logs
+            </Button>
+
             <Button variant="outline" className="shadow-sm border-red-200 text-red-600 hover:bg-red-50" onClick={() => setIsRejectOpen(true)}>
               <XCircle className="mr-2 h-4 w-4" />
               Reject

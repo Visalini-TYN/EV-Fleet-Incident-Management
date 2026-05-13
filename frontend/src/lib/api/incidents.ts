@@ -34,6 +34,15 @@ export const incidentsApi = {
   getPaginated: (page: number = 0, size: number = 10): Promise<PageResponse<IncidentRecord>> =>
     request<PageResponse<IncidentRecord>>(`/api/complaints?page=${page}&size=${size}`),
 
+  getByVehicleId: (
+    vehicleId: string,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<PageResponse<IncidentRecord>> =>
+    request<PageResponse<IncidentRecord>>(
+      `/api/complaints?vehicleId=${encodeURIComponent(vehicleId)}&page=${page}&size=${size}`,
+    ),
+
   /** POST /api/complaints/details — fetch a single complaint. */
   getById: (complaintId: number): Promise<IncidentRecord> =>
     request<IncidentRecord>("/api/complaints/details", {

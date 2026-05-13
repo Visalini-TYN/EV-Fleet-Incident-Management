@@ -12,11 +12,15 @@ import DriverHistoryPage from "@/features/driver/pages/DriverHistoryPage";
 import IncidentDetailPage from "@/features/driver/pages/IncidentDetailPage";
 import "./App.css";
 import AdminVehiclePage from "./features/auth/pages/admin/AdminVehiclePage";
+import AdminVehicleComplaintsPage from "./features/auth/pages/admin/AdminVehicleComplaintsPage";
 import AdminOnboardingPage from "./features/auth/pages/admin/AdminOnboardingPage";
 import ActiveIncidentsPage from "./features/auth/pages/manager/ActiveIncidentsPage";
 import AuditLogPage from "./features/auth/pages/manager/AuditLogPage";
 import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDetailPage";
 import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
+import ManagerVehiclePage from "./features/auth/pages/manager/ManagerVehiclePage";
+import VehicleComplaintsPage from "./features/auth/pages/manager/VehicleComplaintsPage";
+import AuditLogsPage from "./features/auth/pages/manager/AuditLogsPage";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -157,6 +161,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/vehicle/:vehicleId"
+            element={
+              <RequireRole allowedRoles={["admin"]}>
+                <AdminVehicleComplaintsPage />
+              </RequireRole>
+            }
+          />
+          <Route
             path="/admin/vehicle"
             element={
               <RequireRole allowedRoles={["admin"]}>
@@ -190,6 +202,22 @@ function App() {
             }
           />
           <Route
+            path="/manager/vehicle/:vehicleId"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <VehicleComplaintsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/manager/vehicle"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <ManagerVehiclePage />
+              </RequireRole>
+            }
+          />
+          <Route
             path="/manager/audit"
             element={
               <RequireRole allowedRoles={["manager"]}>
@@ -202,6 +230,14 @@ function App() {
             element={
               <RequireRole allowedRoles={["manager"]}>
                 <ManagerIncidentDetailPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/manager/incident/:id/audit-logs"
+            element={
+              <RequireRole allowedRoles={["manager"]}>
+                <AuditLogsPage />
               </RequireRole>
             }
           />
