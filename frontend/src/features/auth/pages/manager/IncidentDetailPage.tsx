@@ -1,6 +1,7 @@
 "use client";
 
-import { Navigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -16,119 +17,222 @@ import {
   Monitor,
   Zap,
   ArrowRightLeft,
+  Loader2,
+  XCircle,
+  CheckCircle2,
+  RotateCcw,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import ManagerLayout from "./ManagerLayout";
-
-const incidentDetailsById: Record<
-  string,
-  {
-    status: string;
-    updatedAt: string;
-    vendor: string;
-    vehicle: string;
-    vehicleName: string;
-    vin: string;
-    driver: string;
-    driverId: string;
-    driverPhone: string;
-    reportDate: string;
-    battery: string;
-    location: string;
-    diagnosticTitle: string;
-    diagnosticBadge: string;
-    incidentSummary: string;
-    userMessage: string;
-    aiMessage: string;
-    guidance: [string, string];
-  }
-> = {
-  "INC-9921": {
-    status: "Escalated",
-    updatedAt: "4 minutes ago",
-    vendor: "VoltService",
-    vehicle: "EV-7704",
-    vehicleName: "Tesla Model 3 Performance",
-    vin: "5YJ3E1EB0LFX000000",
-    driver: "Marcus Thorne",
-    driverId: "DR-9012",
-    driverPhone: "+1 (655) 012-3456",
-    reportDate: "Oct 24, 14:22",
-    battery: "88% Battery",
-    location: "Supercharger-L42",
-    diagnosticTitle: "Operational Diagnostics",
-    diagnosticBadge: "Charging System Failure",
-    incidentSummary:
-      "While attempting to initiate a fast-charge sequence at the L42 hub, the vehicle displayed a 'DC Charge Port Locked' error. Cooling fans engaged at maximum RPM immediately, and charging was terminated by the BMS. Vehicle is currently immobilized on-site.",
-    userMessage:
-      "My charger is stuck and the fans are screaming. Screen says 'DC Charge Port Locked'. Help!",
-    aiMessage:
-      "Analyzing telemetry... Thermal runaway detected in charge port sensors. Initiating safe-mode shutdown.",
-    guidance: [
-      "Perform Emergency Manual Release via trunk cable.",
-      "Disconnect primary high-voltage pyrofuse if fan noise persists.",
-    ],
-  },
-  "INC-9854": {
-    status: "Review",
-    updatedAt: "12 minutes ago",
-    vendor: "RapidCharge AI",
-    vehicle: "EV-5512",
-    vehicleName: "Nissan Ariya Platinum+",
-    vin: "JN1AZ4EH9PM512345",
-    driver: "Alyssa Chen",
-    driverId: "DR-4471",
-    driverPhone: "+1 (655) 111-2244",
-    reportDate: "Oct 24, 10:05",
-    battery: "61% Battery",
-    location: "Downtown Lot C",
-    diagnosticTitle: "Operational Diagnostics",
-    diagnosticBadge: "Authentication Delay",
-    incidentSummary:
-      "The vehicle repeatedly rejected authentication at two public chargers, then dropped into a degraded charging state. The incident is under review while the vendor validates firmware and card authorization logs.",
-    userMessage:
-      "The charger keeps failing after I tap my card. It works sometimes, then stalls.",
-    aiMessage:
-      "Detected intermittent handshake failures with the charging station. Suspected firmware mismatch or authorization timeout.",
-    guidance: [
-      "Retry on a different charger after clearing the session.",
-      "Escalate to vendor support if authentication failures continue.",
-    ],
-  },
-  "INC-9712": {
-    status: "Escalated",
-    updatedAt: "21 minutes ago",
-    vendor: "GridWorks",
-    vehicle: "EV-2048",
-    vehicleName: "Hyundai Ioniq 5",
-    vin: "KM8KR4DF9RU123456",
-    driver: "Noah Patel",
-    driverId: "DR-2088",
-    driverPhone: "+1 (655) 333-7788",
-    reportDate: "Oct 23, 18:40",
-    battery: "34% Battery",
-    location: "North Depot",
-    diagnosticTitle: "Operational Diagnostics",
-    diagnosticBadge: "Thermal Alert",
-    incidentSummary:
-      "The vehicle reported a cooling-system fault after a long-distance trip. Telemetry indicates repeated thermal warnings and a hard stop to protect the battery pack.",
-    userMessage:
-      "I pulled over because the dashboard showed a cooling warning and the car slowed down.",
-    aiMessage:
-      "Thermal stability dropped below the safe threshold. Recommended a controlled shutdown and inspection of the battery cooling loop.",
-    guidance: [
-      "Arrange roadside support and tow to the nearest service bay.",
-      "Inspect coolant circulation and battery thermal sensors before resuming service.",
-    ],
-  },
-};
+import { incidentsApi } from "@/lib/api/incidents";
+import { vehiclesApi } from "@/lib/api/vehicles";
+import { managerApi } from "@/lib/api/manager";
+import { api } from "@/lib/api/auth-client";
+import type { IncidentRecord, AiChatMessage, IncidentDataPayload, Vehicle } from "@/lib/types";
 
 export default function IncidentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const incident = id ? incidentDetailsById[id] : undefined;
+  const navigate = useNavigate();
+  const complaintId = id ? parseInt(id.replace("INC-", ""), 10) : NaN;
+
+  const [incident, setIncident] = useState<IncidentRecord | null>(null);
+  const [payload, setPayload] = useState<IncidentDataPayload | null>(null);
+  const [aiMessages, setAiMessages] = useState<AiChatMessage[]>([]);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [driver, setDriver] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Manager Actions State
+  const [actionLoading, setActionLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [isResolveOpen, setIsResolveOpen] = useState(false);
+  const [isRetryOpen, setIsRetryOpen] = useState(false);
+  
+  // Reassign Modal State
+  const [isReassignOpen, setIsReassignOpen] = useState(false);
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [selectedVendor, setSelectedVendor] = useState<any>(null);
+  const [vendorStats, setVendorStats] = useState<any>(null);
+
+  const showToastAndNavigate = (text: string) => {
+    setToastMessage({ type: "success", text });
+    setTimeout(() => {
+      navigate("/manager/history");
+    }, 2000);
+  };
+
+  const handleReject = async () => {
+    try {
+      setActionLoading(true);
+      await managerApi.rejectComplaint(complaintId);
+      setIsRejectOpen(false);
+      showToastAndNavigate("Complaint rejected successfully.");
+    } catch (e) {
+      console.error(e);
+      setToastMessage({ type: "error", text: "Failed to reject complaint." });
+      setTimeout(() => setToastMessage(null), 3000);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResolve = async () => {
+    try {
+      setActionLoading(true);
+      await managerApi.submitDecision(complaintId, "RESOLVE");
+      setIsResolveOpen(false);
+      showToastAndNavigate("Complaint resolved successfully.");
+    } catch (e) {
+      console.error(e);
+      setToastMessage({ type: "error", text: "Failed to resolve complaint." });
+      setTimeout(() => setToastMessage(null), 3000);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    try {
+      setActionLoading(true);
+      await managerApi.submitDecision(complaintId, "RETRY");
+      setIsRetryOpen(false);
+      showToastAndNavigate("Complaint retried to next vendor.");
+    } catch (e) {
+      console.error(e);
+      setToastMessage({ type: "error", text: "Failed to retry complaint." });
+      setTimeout(() => setToastMessage(null), 3000);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openReassign = async () => {
+    setIsReassignOpen(true);
+    try {
+      const res = await managerApi.getAvailableVendors();
+      // Handle page response if it comes back nested
+      let v = res as any;
+      if (v && v.data) v = v.data;
+      if (v && v.content) v = v.content;
+      setVendors(Array.isArray(v) ? v : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const selectVendorForReassign = async (v: any) => {
+    setSelectedVendor(v);
+    setVendorStats(null);
+    try {
+      const stats = await managerApi.getVendorStats(v.vendorId || v.id);
+      setVendorStats(stats || {});
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleReassign = async () => {
+    if (!selectedVendor) return;
+    try {
+      setActionLoading(true);
+      const vId = selectedVendor.vendorId || selectedVendor.id;
+      if (!vId) throw new Error("Missing vendor ID");
+      await managerApi.reassignComplaint(complaintId, Number(vId));
+      setIsReassignOpen(false);
+      showToastAndNavigate("Complaint reassigned successfully.");
+    } catch (e) {
+      console.error(e);
+      setToastMessage({ type: "error", text: "Failed to reassign complaint." });
+      setTimeout(() => setToastMessage(null), 3000);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isNaN(complaintId)) return;
+
+    const fetchData = async () => {
+      try {
+        const [incRes, chatRes] = await Promise.all([
+          incidentsApi.getById(complaintId),
+          incidentsApi.getAiChat(complaintId).catch(() => [] as AiChatMessage[])
+        ]);
+        setIncident(incRes);
+        let parsedPayload = null;
+        try {
+          if (incRes.data) {
+            parsedPayload = JSON.parse(incRes.data);
+            setPayload(parsedPayload);
+          }
+        } catch (e) {}
+        setAiMessages(chatRes);
+
+        // Fetch driver
+        if (incRes.customerId) {
+          try {
+            const individualsRes = await api.get("/api/users/individuals", { params: { size: 1000 } });
+            let usersList = individualsRes.data;
+            if (usersList && usersList.data) usersList = usersList.data;
+            if (usersList && usersList.content) usersList = usersList.content;
+            if (Array.isArray(usersList)) {
+              const matchedDriver = usersList.find((u: any) => String(u.id) === String(incRes.customerId));
+              if (matchedDriver) setDriver(matchedDriver);
+            }
+          } catch (e) {
+            console.error("Failed to fetch driver details", e);
+          }
+        }
+
+        // Fetch vehicle
+        const vIdToFetch = incRes.vehicleId || parsedPayload?.vehicleId;
+        if (vIdToFetch) {
+          try {
+            const vehicleData = await vehiclesApi.getById(Number(vIdToFetch));
+            setVehicle(vehicleData);
+          } catch (e) {
+            console.error("Failed to fetch vehicle details", e);
+          }
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch incident details", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [complaintId]);
+
+  if (isNaN(complaintId)) {
+    return <Navigate to="/manager/active" replace />;
+  }
+
+  if (loading) {
+    return (
+      <ManagerLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      </ManagerLayout>
+    );
+  }
 
   if (!incident) {
     return <Navigate to="/manager/active" replace />;
   }
+
+  const vId = incident.vehicleId || payload?.vehicleId || "Unknown Vehicle";
+  const desc = payload?.description || payload?.issueDescription || "No description provided.";
+  const loc = payload?.location || "Unknown Location";
 
   return (
     <ManagerLayout>
@@ -142,37 +246,41 @@ export default function IncidentDetailPage() {
               </h1>
 
               <Badge className="bg-red-100 text-red-600 hover:bg-red-100 uppercase tracking-wider">
-                {incident.status}
+                {incident.status?.replace(/_/g, " ")}
               </Badge>
             </div>
 
             <p className="text-sm text-gray-500">
-              Last updated{" "}
-              <span className="font-medium">{incident.updatedAt}</span> • Assigned to{" "}
+              Report Date{" "}
+              <span className="font-medium">
+                {new Date(incident.createdAt).toLocaleString()}
+              </span>{" "}
+              • Assigned to{" "}
               <span className="font-semibold text-gray-700">
-                {incident.vendor}
+                {incident.assignedTeam || "Unassigned"}
               </span>
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="shadow-sm"
-            >
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" className="shadow-sm border-red-200 text-red-600 hover:bg-red-50" onClick={() => setIsRejectOpen(true)}>
+              <XCircle className="mr-2 h-4 w-4" />
               Reject
             </Button>
 
-            <Button
-              variant="outline"
-              className="gap-2 shadow-sm"
-            >
-              <ArrowRightLeft className="h-4 w-4" />
-              Reassign
+            <Button variant="outline" className="shadow-sm border-orange-200 text-orange-600 hover:bg-orange-50" onClick={() => setIsRetryOpen(true)}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Auto-Retry
             </Button>
 
-            <Button className="bg-blue-600 hover:bg-blue-700 shadow-sm">
+            <Button variant="outline" className="gap-2 shadow-sm" onClick={openReassign}>
+              <ArrowRightLeft className="h-4 w-4" />
+              Manual Reassign
+            </Button>
+
+            <Button className="bg-green-600 hover:bg-green-700 shadow-sm" onClick={() => setIsResolveOpen(true)}>
+              <CheckCircle2 className="mr-2 h-4 w-4" />
               Resolve
             </Button>
           </div>
@@ -183,7 +291,7 @@ export default function IncidentDetailPage() {
           {/* Left Side */}
           <div className="space-y-8 lg:col-span-8">
             {/* Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Vehicle Card */}
               <Card className="border-gray-100 shadow-sm">
                 <CardContent className="p-6">
@@ -194,16 +302,18 @@ export default function IncidentDetailPage() {
 
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {incident.vehicle}
+                      {vehicle ? `${vehicle.make} ${vehicle.model}` : vId}
                     </h3>
 
                     <p className="text-gray-600">
-                      {incident.vehicleName}
+                      {vehicle ? `License Plate: ${vehicle.licensePlate}` : "Fleet Vehicle"}
                     </p>
-
-                    <p className="pt-1 font-mono text-xs uppercase text-gray-400">
-                      {incident.vin}
-                    </p>
+                    
+                    {vehicle?.vin && (
+                      <p className="pt-1 font-mono text-xs uppercase text-gray-400">
+                        VIN: {vehicle.vin}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -218,40 +328,23 @@ export default function IncidentDetailPage() {
 
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {incident.driver}
+                      {driver?.fullName || `Driver ${incident.customerId}`}
                     </h3>
 
                     <p className="text-gray-600">
-                      ID: {incident.driverId}
+                      ID: {incident.customerId}
                     </p>
 
-                    <p className="pt-1 text-xs text-gray-400">
-                      {incident.driverPhone}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Summary Card */}
-              <Card className="border-gray-100 shadow-sm">
-                <CardContent className="p-6">
-                  <div className="mb-6 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
-                    <Info className="h-4 w-4" />
-                    Report Summary
-                  </div>
-
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {incident.reportDate}
-                    </h3>
-
-                    <p className="text-gray-600">
-                      {incident.battery}
-                    </p>
-
-                    <p className="pt-1 text-xs text-gray-400">
-                      {incident.location}
-                    </p>
+                    {driver?.email && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {driver.email}
+                      </p>
+                    )}
+                    {driver?.phoneNumber && (
+                      <p className="text-sm text-gray-500">
+                        Phone: {driver.phoneNumber}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -262,17 +355,17 @@ export default function IncidentDetailPage() {
               <CardContent className="p-8">
                 <div className="mb-10 flex items-start justify-between">
                   <h2 className="text-lg font-bold text-gray-900">
-                    {incident.diagnosticTitle}
+                    Issue Details
                   </h2>
 
                   <Badge className="bg-orange-100 text-orange-600 hover:bg-orange-100 uppercase tracking-widest">
-                    {incident.diagnosticBadge}
+                    {incident.issueCategory}
                   </Badge>
                 </div>
 
                 <div className="border-l-4 border-blue-500 py-2 pl-6">
                   <p className="text-lg italic leading-relaxed text-gray-700">
-                    {incident.incidentSummary}
+                    {desc}
                   </p>
                 </div>
               </CardContent>
@@ -295,84 +388,157 @@ export default function IncidentDetailPage() {
                   {/* Timeline line */}
                   <div className="absolute bottom-0 left-3 top-0 w-px bg-gray-200" />
 
-                  {/* User Message */}
-                  <div className="relative flex gap-4">
-                    <div className="z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
-                      <User className="h-4 w-4 text-gray-400" />
+                  {aiMessages.length === 0 ? (
+                    <div className="pl-10 text-sm text-gray-500 italic py-4">
+                      No AI troubleshooting history found.
                     </div>
-
-                    <div className="flex-1 space-y-3">
-                      <p className="text-xs font-bold uppercase tracking-tight text-gray-900">
-                        {incident.driver}
-                      </p>
-
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                        <p className="text-sm italic leading-relaxed text-gray-600">
-                          {incident.userMessage}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* AI Response */}
-                  <div className="relative flex gap-4">
-                    <div className="z-10 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600">
-                      <Zap className="h-4 w-4 text-white" />
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      <p className="text-xs font-bold uppercase tracking-tight text-blue-600">
-                        FleetCore AI
-                      </p>
-
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                        <p className="text-sm italic leading-relaxed text-gray-600">
-                          {incident.aiMessage}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Guidance */}
-                  <div className="relative flex gap-4">
-                    <div className="z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
-                      <Info className="h-4 w-4 text-gray-400" />
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      <p className="text-xs font-bold uppercase tracking-tight text-gray-900">
-                        Automated Guidance
-                      </p>
-
-                      <div className="space-y-4">
-                        <div className="flex gap-3">
-                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
-                            1
-                          </span>
-
-                          <p className="text-sm text-gray-600">
-                            {incident.guidance[0]}
-                          </p>
+                  ) : (
+                    aiMessages.map((msg, index) => (
+                      <div className="relative flex gap-4" key={index}>
+                        <div
+                          className={`z-10 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${
+                            msg.sender === "USER"
+                              ? "border-2 border-gray-200 bg-white"
+                              : "bg-blue-600"
+                          }`}
+                        >
+                          {msg.sender === "USER" ? (
+                            <User className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Zap className="h-4 w-4 text-white" />
+                          )}
                         </div>
 
-                        <div className="flex gap-3">
-                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
-                            2
-                          </span>
-
-                          <p className="text-sm text-gray-600">
-                            {incident.guidance[1]}
+                        <div className="flex-1 space-y-3">
+                          <p
+                            className={`text-xs font-bold uppercase tracking-tight ${
+                              msg.sender === "USER" ? "text-gray-900" : "text-blue-600"
+                            }`}
+                          >
+                            {msg.sender === "USER" ? `Driver ${incident.customerId}` : "FleetCore AI"}
                           </p>
+
+                          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 shadow-sm">
+                            <p className="text-sm italic leading-relaxed text-gray-600">
+                              {msg.message}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
           </aside>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <Dialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Complaint</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">Are you sure you want to reject this complaint?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRejectOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleReject} disabled={actionLoading}>Confirm Reject</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isResolveOpen} onOpenChange={setIsResolveOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Complaint</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">Are you sure you want to resolve this complaint?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsResolveOpen(false)}>Cancel</Button>
+            <Button className="bg-green-600 hover:bg-green-700" onClick={handleResolve} disabled={actionLoading}>Confirm Resolve</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isRetryOpen} onOpenChange={setIsRetryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Auto-Retry (Next Vendor)</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">This will automatically assign the complaint to the next nearest available vendor. Continue?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRetryOpen(false)}>Cancel</Button>
+            <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={handleRetry} disabled={actionLoading}>Confirm Retry</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isReassignOpen} onOpenChange={setIsReassignOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Manual Reassign Vendor</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="border rounded-md p-4 max-h-[400px] overflow-y-auto">
+              <h4 className="font-bold text-sm mb-2 text-gray-700">Available Vendors</h4>
+              {vendors.length === 0 ? <p className="text-xs text-gray-500">No vendors found.</p> : (
+                <div className="space-y-2">
+                  {vendors.map((v) => (
+                    <div 
+                      key={v.vendorId || v.id} 
+                      className={`p-3 border rounded-md cursor-pointer transition ${selectedVendor?.vendorId === v.vendorId ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`}
+                      onClick={() => selectVendorForReassign(v)}
+                    >
+                      <p className="font-semibold text-sm">{v.companyName || v.name || "Vendor"}</p>
+                      <p className="text-xs text-gray-500">{v.email}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="border rounded-md p-4">
+              <h4 className="font-bold text-sm mb-2 text-gray-700">Vendor Stats</h4>
+              {!selectedVendor ? (
+                <p className="text-xs text-gray-500">Select a vendor to view stats.</p>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm"><strong>Name:</strong> {selectedVendor.companyName}</p>
+                  <p className="text-sm"><strong>Rating:</strong> {selectedVendor.rating || "N/A"}</p>
+                  <p className="text-sm"><strong>Distance:</strong> {selectedVendor.distanceKm ? `${selectedVendor.distanceKm} km` : "N/A"}</p>
+                  {vendorStats && (
+                    <div className="mt-4 p-3 bg-gray-50 rounded text-xs space-y-1">
+                      <p><strong>Total Assigned:</strong> {vendorStats.totalAssigned || 0}</p>
+                      <p><strong>Resolved:</strong> {vendorStats.totalResolved || 0}</p>
+                      <p><strong>Avg Resolution Time:</strong> {vendorStats.avgResolutionTime ? `${vendorStats.avgResolutionTime} mins` : "N/A"}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReassignOpen(false)}>Cancel</Button>
+            <Button disabled={!selectedVendor || actionLoading} onClick={handleReassign}>Confirm Assignment</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Toast Notification */}
+      {toastMessage && (
+        <div 
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-6 py-4 shadow-xl transition-all animate-in slide-in-from-bottom-5 ${
+            toastMessage.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"
+          }`}
+        >
+          {toastMessage.type === "success" ? (
+            <CheckCircle2 className="h-5 w-5" />
+          ) : (
+            <XCircle className="h-5 w-5" />
+          )}
+          <span className="font-medium text-sm">{toastMessage.text}</span>
+        </div>
+      )}
     </ManagerLayout>
   );
 }

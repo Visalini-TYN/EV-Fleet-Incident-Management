@@ -1,5 +1,15 @@
 export type UserRole = "DRIVER" | "VENDOR_ADMIN" | "ADMIN" | "SUPER_ADMIN" | "USER";
 
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
 export interface AuthUser {
   id: number;
   email: string;

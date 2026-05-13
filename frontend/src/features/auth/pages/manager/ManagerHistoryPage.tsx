@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import {
-  AlertTriangle,
   Download,
   Filter,
   ChevronRight,
@@ -16,7 +15,6 @@ import type { IncidentRecord, PageResponse } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardContent,
 } from "@/components/ui/card"
 import {
   Table,
@@ -27,41 +25,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import ManagerLayout from "./ManagerLayout"
-const metrics = [
-  {
-    title: "Total Incidents",
-    value: "1,284",
-    subtitle: "+12%",
-    footer: "",
-    badge: true,
-  },
-  {
-    title: "Escalated",
-    value: "42",
-    footer: "Action required",
-    dot: "bg-rose-500",
-  },
-  {
-    title: "Vendor Perf.",
-    value: "94.2%",
-    footer: "Average Rating",
-  },
-  {
-    title: "SLA Breaches",
-    value: "05",
-    footer: "Critical threshold",
-  },
-  {
-    title: "Solved",
-    value: "1,102",
-    footer: "86% Success Rate",
-  },
-  {
-    title: "Pending",
-    value: "135",
-    footer: "Currently in queue",
-  },
-]
 
 const getTimeElapsed = (createdAt: string) => {
   const start = new Date(createdAt).getTime()
@@ -71,19 +34,6 @@ const getTimeElapsed = (createdAt: string) => {
   const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
   const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
   return diffHrs > 0 ? `${diffHrs}h ${diffMins}m` : `${diffMins}m`
-}
-
-const getPriorityStyle = (priority: string) => {
-  switch (priority) {
-    case "HIGH":
-      return "bg-rose-50 text-rose-600 border border-rose-100"
-    case "MEDIUM":
-      return "bg-orange-50 text-orange-600 border border-orange-100"
-    case "LOW":
-      return "bg-slate-100 text-slate-600"
-    default:
-      return "bg-slate-100 text-slate-600"
-  }
 }
 
 const getStatusStyle = (status: string) => {
@@ -96,12 +46,14 @@ const getStatusStyle = (status: string) => {
       return "bg-blue-50 text-blue-600 border border-blue-100"
     case "RESOLVED":
       return "bg-green-50 text-green-600 border border-green-100"
+    case "REJECTED":
+      return "bg-gray-100 text-gray-600 border border-gray-300"
     default:
       return "bg-slate-100 text-slate-600 border border-slate-200"
   }
 }
 
-export default function ActiveIncidentsPage() {
+export default function ManagerHistoryPage() {
   const [pageData, setPageData] = useState<PageResponse<IncidentRecord> | null>(null)
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -111,6 +63,7 @@ export default function ActiveIncidentsPage() {
       setLoading(true)
       try {
         const data = await incidentsApi.getPaginated(page, 10)
+        // Optionally filter out OPEN to only show actioned, but we will just show all for now
         setPageData(data)
       } catch (error) {
         console.error("Failed to fetch incidents:", error)
@@ -127,57 +80,13 @@ export default function ActiveIncidentsPage() {
         {/* Header */}
         <header>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Active Incidents
+            Manager History
           </h1>
 
           <p className="mt-2 text-lg text-slate-500">
-            Manage and resolve active service interruptions across the fleet.
+            Log of incidents you have actioned, rejected, or reassigned.
           </p>
         </header>
-
-        {/* Metrics */}
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {metrics.map((metric) => (
-            <Card
-              key={metric.title}
-              className="min-h-[200px] rounded-xl border border-slate-200 shadow-sm"
-            >
-              <CardContent className="flex h-full flex-col justify-between p-6">
-                <div>
-                  <div className="mb-4 flex items-start justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      {metric.title}
-                    </span>
-
-                    {metric.badge && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                        {metric.subtitle}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-4xl font-bold text-slate-900">
-                      {metric.value}
-                    </h2>
-
-                    {metric.dot && (
-                      <span
-                        className={`h-2 w-2 rounded-full ${metric.dot}`}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {metric.footer && (
-                  <p className="text-xs font-medium text-slate-500">
-                    {metric.footer}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </section>
 
         {/* Incident Table */}
         <section>
@@ -186,11 +95,11 @@ export default function ActiveIncidentsPage() {
             <div className="flex flex-col justify-between gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
-                  Escalated Incident Queue
+                  Actioned Incident Queue
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Real-time feed of incidents requiring immediate intervention.
+                  Historical feed of incidents handled by you.
                 </p>
               </div>
 
@@ -254,7 +163,7 @@ export default function ActiveIncidentsPage() {
                   ) : !pageData || pageData.content.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-32 text-center text-slate-500">
-                        No active incidents found.
+                        No historical incidents found.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -346,26 +255,6 @@ export default function ActiveIncidentsPage() {
             )}
           </Card>
         </section>
-
-        {/* Alert Card */}
-        <Card className="border-rose-100 bg-rose-50 shadow-sm">
-          <CardContent className="flex items-start gap-4 p-6">
-            <div className="rounded-full bg-white p-3 shadow-sm">
-              <AlertTriangle className="h-6 w-6 text-rose-600" />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold text-rose-700">
-                Critical Incidents Require Immediate Attention
-              </h3>
-
-              <p className="mt-1 text-sm text-rose-600">
-                42 escalated incidents are currently active across the fleet
-                ecosystem. Ensure SLA compliance and rapid vendor response.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </ManagerLayout>
   )

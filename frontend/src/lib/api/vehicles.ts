@@ -8,6 +8,9 @@ export const vehiclesApi = {
     return unwrapPage<Vehicle>(raw);
   },
 
+  /** GET /api/vehicles/{id} — Fetch a single vehicle by its internal ID. */
+  getById: (id: number): Promise<Vehicle> => request<Vehicle>(`/api/vehicles/${id}`),
+
   /** Get the vehicle assigned to a specific user. */
   getMyVehicle: async (userId: number): Promise<Vehicle | null> => {
     const raw = await request<unknown>("/api/vehicles");

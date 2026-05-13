@@ -8,6 +8,7 @@ import type {
   IncidentDataPayload,
   IncidentRecord,
   UploadedDocument,
+  PageResponse,
 } from "../types";
 
 export function parseIncidentData(raw: string | null | undefined): IncidentDataPayload | null {
@@ -29,6 +30,9 @@ export const incidentsApi = {
     const raw = await request<unknown>("/api/complaints");
     return unwrapPage<IncidentRecord>(raw);
   },
+
+  getPaginated: (page: number = 0, size: number = 10): Promise<PageResponse<IncidentRecord>> =>
+    request<PageResponse<IncidentRecord>>(`/api/complaints?page=${page}&size=${size}`),
 
   /** POST /api/complaints/details — fetch a single complaint. */
   getById: (complaintId: number): Promise<IncidentRecord> =>
