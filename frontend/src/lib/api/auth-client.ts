@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from "axios";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://astride-safari-discover.ngrok-free.dev";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";

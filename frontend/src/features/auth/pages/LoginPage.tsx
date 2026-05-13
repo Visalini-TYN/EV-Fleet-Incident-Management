@@ -49,12 +49,26 @@ const Login = () => {
       });
 
       const payload = response.data?.data || response.data || {};
-      const accessToken = payload.accessToken;
-      const refreshToken = payload.refreshToken;
+      const accessToken =
+        payload.accessToken ||
+        payload.access_token ||
+        payload.token ||
+        payload.data?.accessToken ||
+        payload.data?.access_token ||
+        payload.data?.token;
+      const refreshToken =
+        payload.refreshToken ||
+        payload.refresh_token ||
+        payload.data?.refreshToken ||
+        payload.data?.refresh_token;
 
-      if (accessToken) {
-        localStorage.setItem("accessToken", accessToken);
+      if (!accessToken) {
+        console.error("Login response missing access token:", response.data);
+        setSubmitError("Login failed: unable to read access token from server response.");
+        return;
       }
+
+      localStorage.setItem("accessToken", accessToken);
 
       if (refreshToken) {
         localStorage.setItem("refreshToken", refreshToken);
@@ -65,11 +79,18 @@ const Login = () => {
       await refreshProfile();
       navigate("/home", { replace: true });
     } catch (error) {
+      console.error("Login error:", error);
       if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        const backendMessage =
+          responseData?.message ||
+          responseData?.error ||
+          responseData?.data?.message ||
+          responseData?.data?.error ||
+          error.message;
+
         setSubmitError(
-          error.response?.data?.message ||
-            error.response?.data?.error ||
-            "Login failed. Please try again.",
+          backendMessage || "Login failed. Please try again.",
         );
       } else {
         setSubmitError("Login failed. Please try again.");

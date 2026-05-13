@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { normalizeRole } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,7 @@ import {
   History,
   LogOut,
   Siren,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 
@@ -37,6 +39,13 @@ const managerNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/manager" },
   { title: "Active Incidents", icon: FileWarning, url: "/manager/active" },
   { title: "Audit Log", icon: History, url: "/manager/audit" },
+];
+
+const vendorNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/home" },
+  { title: "Assigned Incidents", icon: Siren, url: "/vendor/assigned" },
+  { title: "Resolution Queue", icon: History, url: "/vendor/resolution" },
+  { title: "Reports", icon: BarChart3, url: "/vendor/reports" },
 ];
 
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */
@@ -61,14 +70,19 @@ export function AppSidebar() {
   const userId = profileData?.id;
   const role = authRole ?? profileData?.role ?? "Driver";
   const initials = getInitials(profileData?.fullName);
-  const normalizedRole = role.toLowerCase();
+  const normalizedRole = normalizeRole(role) ?? role.toLowerCase();
   // Home page logic treats `admin` and `vendor_admin` as admin users.
-  const isAdmin =
-    normalizedRole === "admin" ||
-    normalizedRole === "vendor_admin" ||
-    normalizedRole === "vendor-admin";
+  const isAdmin = normalizedRole === "admin";
+  const isVendor = normalizedRole === "vendor" || normalizedRole === "vendor_admin";
   const isManager = normalizedRole === "manager";
-  const navItems = isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
+  
+  const navItems = isAdmin 
+    ? adminNavItems 
+    : isVendor 
+      ? vendorNavItems 
+      : isManager 
+        ? managerNavItems 
+        : driverNavItems;
 
   const displayRoleLabel = (() => {
     if (normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin") return "Vendor Admin";

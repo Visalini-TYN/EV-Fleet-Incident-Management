@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/features/auth/auth-context";
+import { normalizeRole } from "@/lib/utils";
 import Login from "@/features/auth/pages/LoginPage";
 import Signup from "@/features/auth/pages/SignupPage";
 import Home from "@/features/auth/pages/HomePage";
@@ -17,6 +18,9 @@ import ActiveIncidentsPage from "./features/auth/pages/manager/ActiveIncidentsPa
 import AuditLogPage from "./features/auth/pages/manager/AuditLogPage";
 import ManagerIncidentDetailPage from "./features/auth/pages/manager/IncidentDetailPage";
 import OverviewDashboard from "./features/auth/pages/manager/OverviewDashboard";
+import AssignedIncidents from "./features/auth/pages/vendor/AssignedIncidents";
+import Reports from "./features/auth/pages/vendor/Reports";
+import ResolutionQueue from "./features/auth/pages/vendor/ResolutionQueue";
 
 function AuthGate() {
   const { status } = useAuth();
@@ -59,13 +63,8 @@ function RequireRole({
   redirectTo?: string;
 }) {
   const { status, role } = useAuth();
-  const normalizedRole = role?.toLowerCase();
-  // Treat vendor_admin (and variants) as admin per Home page logic.
-  const normalizedRoleCanonical =
-    normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin"
-      ? "admin"
-      : normalizedRole;
-  const allowedRolesNormalized = allowedRoles.map((item) => item.toLowerCase());
+  const normalizedRole = normalizeRole(role);
+  const allowedRolesNormalized = allowedRoles.map((item) => normalizeRole(item) ?? item.toLowerCase());
 
   if (status === "loading") {
     return null;
@@ -77,7 +76,7 @@ function RequireRole({
 
   console.log("RequireRole role:", role);
 
-  if (!normalizedRoleCanonical || !allowedRolesNormalized.includes(normalizedRoleCanonical)) {
+  if (!normalizedRole || !allowedRolesNormalized.includes(normalizedRole)) {
     return <Navigate to={redirectTo} replace />;
   }
 
@@ -202,6 +201,31 @@ function App() {
             element={
               <RequireRole allowedRoles={["manager"]}>
                 <ManagerIncidentDetailPage />
+              </RequireRole>
+            }
+          />
+          {/* Vendor routes */}
+          <Route
+            path="/vendor/assigned"
+            element={
+              <RequireRole allowedRoles={["vendor", "vendor_admin"]}>
+                <AssignedIncidents />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/reports"
+            element={
+              <RequireRole allowedRoles={["vendor", "vendor_admin"]}>
+                <Reports />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/resolution"
+            element={
+              <RequireRole allowedRoles={["vendor", "vendor_admin"]}>
+                <ResolutionQueue />
               </RequireRole>
             }
           />

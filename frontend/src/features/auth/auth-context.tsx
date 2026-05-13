@@ -10,6 +10,7 @@ import {
 import { jwtDecode } from "jwt-decode"
 
 import { api } from "@/lib/api/auth-client"
+import { normalizeRole } from "@/lib/utils"
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated"
 
@@ -43,14 +44,14 @@ const getRoleFromToken = () => {
     // in `sub` (or other fields) — accept that only when it looks like a
     // role string (e.g. MANAGER, ADMIN, DRIVER, vendor_admin).
     const rawRole = decoded?.role ?? null
-    if (rawRole && typeof rawRole === "string") return rawRole.trim()
+    if (rawRole && typeof rawRole === "string") return normalizeRole(rawRole)
 
     const subCandidate = decoded?.sub
     if (subCandidate && typeof subCandidate === "string") {
       const candidate = subCandidate.trim()
       // Heuristic: treat the `sub` as a role only if it matches common role
       // patterns (letters, underscores or hyphens, no @ which suggests an email).
-      if (/^[A-Za-z_\-]+$/.test(candidate)) return candidate
+      if (/^[A-Za-z_\-]+$/.test(candidate)) return normalizeRole(candidate)
     }
 
     return null
