@@ -3,6 +3,7 @@ import { useAuth } from "@/features/auth/auth-context";
 import ApprovalSuccessPage from "@/features/auth/pages/admin/ApprovalSuccessPage";
 import HomeforAdmin from "./admin/HomeforAdmin";
 import ActiveIncidentsPage from "./manager/ActiveIncidentsPage";
+import VendorsDashboard from "./vendor/vendorsDashboard";
 
 export default function Home() {
   const { status, role } = useAuth();
@@ -13,10 +14,12 @@ export default function Home() {
   }
 
 
-  if (normalizedRole === "admin" || normalizedRole === "vendor_admin") {
+  if (normalizedRole === "admin" ) {
     return <HomeforAdmin />;
   }
-
+  if (normalizedRole === "vendor_admin") {
+    return <VendorsDashboard />;
+  }
   if (normalizedRole === "driver") {
     return <ApprovalSuccessPage />;
   }
