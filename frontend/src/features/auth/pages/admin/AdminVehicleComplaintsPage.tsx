@@ -19,9 +19,11 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import AdminLayout from "./AdminLayout"
+import { useAuth } from "@/features/auth/auth-context"
 import { incidentsApi, parseIncidentData } from "@/lib/api/incidents"
+import { serviceHistoryApi } from "@/lib/api/service-history"
 import { vehiclesApi } from "@/lib/api/vehicles"
-import type { IncidentRecord } from "@/lib/types"
+import type { IncidentRecord, ServiceHistoryRecord } from "@/lib/types"
 
 function getStatusBadgeClass(status: string) {
   return status === "OPEN"
@@ -40,18 +42,36 @@ function formatDate(isoDate: string) {
       })
 }
 
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined) return "—"
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 export default function AdminVehicleComplaintsPage() {
   const { vehicleId } = useParams<{ vehicleId: string }>()
   const navigate = useNavigate()
+  const { role } = useAuth()
   const [incidents, setIncidents] = useState<IncidentRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [vehicleLabel, setVehicleLabel] = useState<string>("Vehicle")
   const [vehicleModel, setVehicleModel] = useState<string>("")
+  const [serviceHistory, setServiceHistory] = useState<ServiceHistoryRecord[]>([])
+  const [serviceHistoryLoading, setServiceHistoryLoading] = useState(false)
+  const [serviceHistoryError, setServiceHistoryError] = useState<string | null>(null)
+
+  const normalizedRole = role?.toLowerCase() ?? ""
+  const showServiceHistory = normalizedRole === "admin"
 
   useEffect(() => {
     const loadVehicleDetails = async () => {
       if (!vehicleId) {
+        setServiceHistory([])
+        setServiceHistoryError(null)
         return
       }
 
@@ -97,6 +117,38 @@ export default function AdminVehicleComplaintsPage() {
     loadVehicleDetails()
     loadIncidents()
   }, [vehicleId])
+
+  useEffect(() => {
+    const loadServiceHistory = async () => {
+      if (!showServiceHistory || !vehicleId) {
+        setServiceHistory([])
+        setServiceHistoryError(null)
+        return
+      }
+
+      const numericVehicleId = Number(vehicleId)
+      if (!Number.isFinite(numericVehicleId)) {
+        setServiceHistory([])
+        setServiceHistoryError("Invalid vehicle ID.")
+        return
+      }
+
+      try {
+        setServiceHistoryLoading(true)
+        setServiceHistoryError(null)
+        const entries = await serviceHistoryApi.getByVehicleId(numericVehicleId)
+        setServiceHistory(entries)
+      } catch (err) {
+        console.error("Failed to fetch service history:", err)
+        setServiceHistory([])
+        setServiceHistoryError("Failed to load service history for this vehicle.")
+      } finally {
+        setServiceHistoryLoading(false)
+      }
+    }
+
+    void loadServiceHistory()
+  }, [showServiceHistory, vehicleId])
 
   const totalCount = useMemo(() => incidents.length, [incidents])
 
@@ -214,6 +266,79 @@ export default function AdminVehicleComplaintsPage() {
               )}
             </CardContent>
           </div>
+
+          {showServiceHistory && (
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <CardHeader className="border-b bg-slate-100 px-6 py-4">
+                <CardTitle className="text-2xl font-semibold">
+                  Service history
+                </CardTitle>
+                <p className="mt-1 text-sm text-slate-500">
+                  Admin-only maintenance snapshot for this vehicle.
+                </p>
+              </CardHeader>
+
+              <CardContent className="px-0 py-0">
+                {serviceHistoryLoading ? (
+                  <div className="px-6 py-8 text-sm text-slate-500">
+                    Loading service history...
+                  </div>
+                ) : serviceHistoryError ? (
+                  <div className="px-6 py-8 text-sm text-red-600">
+                    {serviceHistoryError}
+                  </div>
+                ) : serviceHistory.length === 0 ? (
+                  <div className="px-6 py-8 text-sm text-slate-500">
+                    No service history found for this vehicle.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-slate-100 hover:bg-slate-100">
+                          <TableHead className="px-6 py-4 font-semibold">ID</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Service date</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Service type</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Odometer</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Cost</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Description</TableHead>
+                          <TableHead className="px-6 py-4 font-semibold">Vehicle</TableHead>
+                        </TableRow>
+                      </TableHeader>
+
+                      <TableBody>
+                        {serviceHistory.map((entry) => (
+                          <TableRow key={entry.id} className="border-b transition-colors hover:bg-blue-50">
+                            <TableCell className="px-6 py-4 font-semibold">
+                              #{entry.id}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {formatDate(entry.serviceDate)}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {entry.serviceType}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {entry.odometerReading?.toLocaleString("en-IN") ?? "—"}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {formatCurrency(entry.cost)}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {entry.description ?? "—"}
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-sm text-slate-600">
+                              {vehicleLabel}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </div>
+          )}
 
           <div className="mt-4 text-sm text-slate-500">
             Showing {totalCount} incident{totalCount === 1 ? "" : "s"} on this page.

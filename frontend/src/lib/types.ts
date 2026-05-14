@@ -69,11 +69,25 @@ export interface Vehicle {
   yearOfManufacture: number;
   batteryCapacityKwh: number;
   chassisNo: string;
+  serviceDue?: string;
   assignedDriverName?: string;
   driverName?: string;
   driver?: { fullName?: string } | null;
   assignedDriver?: { fullName?: string } | null;
 }  
+
+export interface ServiceHistoryRecord {
+  id: number;
+  vehicleId?: number;
+  serviceDate: string;
+  serviceType: string;
+  odometerReading?: number | null;
+  description?: string | null;
+  cost?: number | null;
+  providerName?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 /** Priority hint we send with the complaint. */
 export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH";
