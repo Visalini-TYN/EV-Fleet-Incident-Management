@@ -18,6 +18,8 @@ import {
   History,
   LogOut,
   Siren,
+  ListTodo,
+  BarChart,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 
@@ -36,6 +38,13 @@ const adminNavItems = [
 const managerNavItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/manager" },
   { title: "Vehicle", icon: History, url: "/manager/vehicle" },
+];
+
+const vendorNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/vendor" },
+  { title: "Assigned Incidents", icon: Siren, url: "/vendor/assigned" },
+  { title: "Resolution Queue", icon: History, url: "/vendor/resolution" },
+  { title: "Reports", icon: BarChart, url: "/vendor/reports" },
 ];
 
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */
@@ -61,18 +70,17 @@ export function AppSidebar() {
   const role = authRole ?? profileData?.role ?? "Driver";
   const initials = getInitials(profileData?.fullName);
   const normalizedRole = role.toLowerCase();
-  // Home page logic treats `admin` and `vendor_admin` as admin users.
-  const isAdmin =
-    normalizedRole === "admin" ||
-    normalizedRole === "vendor_admin" ||
-    normalizedRole === "vendor-admin";
+  
+  const isVendor = normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin";
+  const isAdmin = normalizedRole === "admin";
   const isManager = normalizedRole === "manager";
-  const navItems = isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
+  
+  const navItems = isVendor ? vendorNavItems : isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
 
   const displayRoleLabel = (() => {
-    if (normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin") return "Vendor Admin";
-    if (normalizedRole === "admin") return "Admin";
-    if (normalizedRole === "manager") return "Manager";
+    if (isVendor) return "Vendor Admin";
+    if (isAdmin) return "Admin";
+    if (isManager) return "Manager";
     if (normalizedRole === "driver") return "Driver";
     return role;
   })();

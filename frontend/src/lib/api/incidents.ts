@@ -25,7 +25,7 @@ export const incidentsApi = {
   create: (payload: CreateIncidentRequest): Promise<string> =>
     request<string>("/api/complaints", { method: "POST", body: payload }),
 
- 
+
   getAll: async (): Promise<IncidentRecord[]> => {
     const raw = await request<unknown>("/api/complaints");
     return unwrapPage<IncidentRecord>(raw);
@@ -54,6 +54,40 @@ export const incidentsApi = {
     request<AiChatMessage[]>("/api/complaints/ai-chat", {
       method: "POST",
       body: { complaintId },
+    }),
+
+  /** PUT /api/complaints/status — update status (e.g. IN_REPAIR). */
+  updateStatus: (complaintId: number, status: string): Promise<IncidentRecord> =>
+    request<IncidentRecord>("/api/complaints/status", {
+      method: "PUT",
+      body: { complaintId, status },
+    }),
+
+  /** PUT /api/complaints/resolve — mark as resolved. */
+  resolve: (complaintId: number, resolutionRemarks: string): Promise<IncidentRecord> =>
+    request<IncidentRecord>("/api/complaints/resolve", {
+      method: "PUT",
+      body: { complaintId, resolved: true, resolutionRemarks },
+    }),
+
+  /** POST /api/complaints/assigned — fetch complaints assigned to a vendor. */
+  getAssigned: async (vendorId: number): Promise<IncidentRecord[]> => {
+    const raw = await request<unknown>("/api/complaints/assigned", {
+      method: "POST",
+      body: { vendorId },
+    });
+    return unwrapPage<IncidentRecord>(raw);
+  },
+
+  /** GET /api/users/individuals — fetch technicians/individuals for the organization. */
+  getTechnicians: (): Promise<any[]> =>
+    request<any[]>("/api/users/individuals"),
+
+  /** PUT /api/complaints/assign-technician — assign a technician to a complaint. */
+  assignTechnician: (complaintId: number, technicianId: number): Promise<IncidentRecord> =>
+    request<IncidentRecord>("/api/complaints/assign-technician", {
+      method: "PUT",
+      body: { complaintId, technicianId },
     }),
 };
 

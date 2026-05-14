@@ -29,6 +29,7 @@ const STATUS_VARIANT: Record<IncidentStatus, "default" | "secondary" | "destruct
   ESCALATED_TO_MANAGER: "destructive",
   RESOLVED: "default",
   REJECTED: "destructive",
+  IN_REPAIR: "secondary",
 };
 
 const STATUS_LABEL: Record<IncidentStatus, string> = {
@@ -38,6 +39,7 @@ const STATUS_LABEL: Record<IncidentStatus, string> = {
   ESCALATED_TO_MANAGER: "Escalated",
   RESOLVED: "Resolved",
   REJECTED: "Rejected",
+  IN_REPAIR: "Being Repaired",
 };
 
 export default function HistoryPage() {

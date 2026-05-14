@@ -28,6 +28,7 @@ export interface AuthUser {
 export type IncidentStatus =
   | "OPEN"
   | "IN_PROGRESS"
+  | "IN_REPAIR"
   | "ASSIGNED_TO_VENDOR"
   | "ESCALATED_TO_MANAGER"
   | "RESOLVED"
@@ -41,7 +42,11 @@ export type IssueCategory =
   | "CHARGING"
   | "BRAKE"
   | "TYRE"
-  | "UNKNOWN";
+  | "SUSPENSION_ISSUE"
+  | "LIGHTING"
+  | "BODY_DAMAGE"
+  | "UNKNOWN"
+  | (string & {});
 
 /** Single message from POST /api/complaints/ai-chat. */
 export interface AiChatMessage {

@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api/auth-client";
 
 import {
-  Bell,
-  UserCircle,
   Check,
   PersonStanding,
   MapPin,
@@ -16,12 +14,15 @@ import {
 } from "lucide-react";
 
 import {
-  MapContainer,
-  TileLayer,
+  MapContainer as LeafletMapContainer,
+  TileLayer as LeafletTileLayer,
   Marker,
   Popup,
   useMapEvents,
 } from "react-leaflet";
+
+const MapContainer = LeafletMapContainer as any;
+const TileLayer = LeafletTileLayer as any;
 
 import L from "leaflet";
 
@@ -68,7 +69,7 @@ function LocationMarker({
   >;
 }) {
   useMapEvents({
-    click(e) {
+    click(e: any) {
       setPosition({
         lat: e.latlng.lat,
         lng: e.latlng.lng,
