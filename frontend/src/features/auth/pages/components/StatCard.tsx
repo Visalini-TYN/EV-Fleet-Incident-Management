@@ -1,4 +1,4 @@
-import { SafeIcon } from "../../../components/SafeIcon";
+import { SafeIcon } from "@/features/auth/components/SafeIcon";
 
 interface StatCardProps {
   title: string;

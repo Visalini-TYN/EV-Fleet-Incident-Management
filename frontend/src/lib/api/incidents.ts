@@ -79,9 +79,9 @@ export const incidentsApi = {
     return unwrapPage<IncidentRecord>(raw);
   },
 
-  /** GET /api/users/individuals — fetch technicians/individuals for the organization. */
+  /** GET /api/technicians — fetch technicians/individuals for the organization. */
   getTechnicians: (): Promise<any[]> =>
-    request<any[]>("/api/users/individuals"),
+    request<any[]>("/api/technicians"),
 
   /** PUT /api/complaints/assign-technician — assign a technician to a complaint. */
   assignTechnician: (complaintId: number, technicianId: number): Promise<IncidentRecord> =>

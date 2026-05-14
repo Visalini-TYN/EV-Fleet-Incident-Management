@@ -19,8 +19,9 @@ export function useIncidents() {
       ]);
 
       console.log("Fetched Techs:", techs);
-      const techMap = techs.reduce((acc, tech) => {
-        if (tech.id && tech.name) acc[tech.id] = tech.name;
+      const safeTechs = Array.isArray(techs) ? techs : (techs?.content ? techs.content : []);
+      const techMap = safeTechs.reduce((acc: Record<number, string>, tech: any) => {
+        if (tech && tech.id && tech.name) acc[tech.id] = tech.name;
         return acc;
       }, {} as Record<number, string>);
       console.log("Built TechMap:", techMap);

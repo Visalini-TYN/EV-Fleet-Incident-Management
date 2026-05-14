@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SafeIcon } from "../../../components/SafeIcon";
+import { SafeIcon } from "@/features/auth/components/SafeIcon";
 
 interface IncidentTableProps {
   data: any[];

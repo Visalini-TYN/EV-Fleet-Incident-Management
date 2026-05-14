@@ -18,8 +18,6 @@ import {
   History,
   LogOut,
   Siren,
-  ListTodo,
-  BarChart,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 
@@ -40,13 +38,6 @@ const managerNavItems = [
   { title: "Vehicle", icon: History, url: "/manager/vehicle" },
 ];
 
-const vendorNavItems = [
-  { title: "Dashboard", icon: LayoutDashboard, url: "/vendor" },
-  { title: "Assigned Incidents", icon: Siren, url: "/vendor/assigned" },
-  { title: "Resolution Queue", icon: History, url: "/vendor/resolution" },
-  { title: "Reports", icon: BarChart, url: "/vendor/reports" },
-];
-
 /** Pulls "AB" style initials from a full name. Falls back to "DR". */
 function getInitials(fullName: string | undefined | null): string {
   if (!fullName) return "DR";
@@ -55,6 +46,13 @@ function getInitials(fullName: string | undefined | null): string {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
+
+const vendorAdminNavItems = [
+  { title: "Dashboard", icon: LayoutDashboard, url: "/vendor" },
+  { title: "Assigned Incidents", icon: FileWarning, url: "/vendor/assigned" },
+  { title: "Resolution Queue", icon: History, url: "/vendor/resolution" },
+  { title: "Reports", icon: LayoutDashboard, url: "/vendor/reports" },
+];
 
 export function AppSidebar() {
   const location = useLocation();
@@ -71,16 +69,16 @@ export function AppSidebar() {
   const initials = getInitials(profileData?.fullName);
   const normalizedRole = role.toLowerCase();
   
-  const isVendor = normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin";
+  const isVendorAdmin = normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin";
   const isAdmin = normalizedRole === "admin";
   const isManager = normalizedRole === "manager";
   
-  const navItems = isVendor ? vendorNavItems : isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
+  const navItems = isVendorAdmin ? vendorAdminNavItems : isAdmin ? adminNavItems : isManager ? managerNavItems : driverNavItems;
 
   const displayRoleLabel = (() => {
-    if (isVendor) return "Vendor Admin";
-    if (isAdmin) return "Admin";
-    if (isManager) return "Manager";
+    if (normalizedRole === "vendor_admin" || normalizedRole === "vendor-admin") return "Vendor Admin";
+    if (normalizedRole === "admin") return "Admin";
+    if (normalizedRole === "manager") return "Manager";
     if (normalizedRole === "driver") return "Driver";
     return role;
   })();

@@ -1,4 +1,4 @@
-import { SafeIcon } from "../../../components/SafeIcon";
+import { SafeIcon } from "../../components/SafeIcon";
 import IncidentTable from "../components/IncidentTable";
 import { useIncidents } from "../hooks/use-incidents";
 import StatCard from "../components/StatCard";
@@ -116,4 +116,4 @@ export default function AssignedIncidents() {
             </div>
         </VendorLayout>
     );
-}
+}

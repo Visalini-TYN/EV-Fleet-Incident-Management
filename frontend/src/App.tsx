@@ -21,6 +21,14 @@ import ManagerVehiclePage from "./features/auth/pages/manager/ManagerVehiclePage
 import VehicleComplaintsPage from "./features/auth/pages/manager/VehicleComplaintsPage";
 import NotFoundPage from "./features/auth/pages/NotFoundPage";
 
+// Vendor Pages
+import VendorsDashboard from "./features/auth/pages/vendor/vendorsDashboard";
+import AssignedIncidents from "./features/auth/pages/vendor/AssignedIncidents";
+import ResolutionQueue from "./features/auth/pages/vendor/ResolutionQueue";
+import Reports from "./features/auth/pages/vendor/Reports";
+import AssignTechnician from "./features/auth/pages/vendor/AssignTechnician";
+import VendorIncidentDetailPage from "./features/auth/pages/vendor/VendorIncidentDetailPage";
+
 function AuthGate() {
   const { status } = useAuth();
   if (status === "loading") return null;
@@ -237,6 +245,55 @@ function App() {
             element={
               <RequireRole allowedRoles={["admin"]}>
                 <AuditLogsPage />
+              </RequireRole>
+            }
+          />
+          {/* Vendor routes */}
+          <Route
+            path="/vendor"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <VendorsDashboard />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/assigned"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <AssignedIncidents />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/resolution"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <ResolutionQueue />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/reports"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <Reports />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/assign/:id"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <AssignTechnician />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/vendor/incident/:id"
+            element={
+              <RequireRole allowedRoles={["vendor_admin", "vendor-admin", "admin"]} redirectTo="/home">
+                <VendorIncidentDetailPage />
               </RequireRole>
             }
           />

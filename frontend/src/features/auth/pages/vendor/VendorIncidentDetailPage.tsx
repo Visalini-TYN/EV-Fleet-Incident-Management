@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { incidentsApi } from "@/lib/api/incidents";
 import { type IncidentRecord } from "@/lib/types";
 import VendorLayout from "./VendorLayout";
-import { SafeIcon } from "../../../components/SafeIcon";
+import { SafeIcon } from "../../components/SafeIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +62,9 @@ export default function VendorIncidentDetailPage() {
       setUpdating(true);
       const response = await incidentsApi.resolve(Number(id), resolutionRemarks);
       if (response && response.includes("task not found")) {
-         alert("Cannot resolve this incident yet because it is not in the correct workflow state (Vendor task not found).");
+        alert("Cannot resolve this incident yet because it is not in the correct workflow state (Vendor task not found).");
       } else {
-         alert("Incident resolved successfully.");
+        alert("Incident resolved successfully.");
       }
       const data = await incidentsApi.getById(Number(id));
       setIncident(data);
@@ -118,10 +118,10 @@ export default function VendorIncidentDetailPage() {
               <p className="text-sm text-slate-500">Created on {new Date(incident.createdAt).toLocaleString()}</p>
             </div>
           </div>
-          
+
           {incident.status !== 'RESOLVED' && (
             <div className="flex items-center gap-3">
-               <Select value={newStatus} onValueChange={setNewStatus}>
+              <Select value={newStatus} onValueChange={setNewStatus}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Update Status" />
                 </SelectTrigger>
@@ -183,7 +183,7 @@ export default function VendorIncidentDetailPage() {
                   {(() => {
                     const rawRemarks = incident.workSummary.split("AI Suggestion")[1]?.split("Remarks:")[1]?.trim();
                     if (!rawRemarks) return null;
-                    
+
                     // Clean up the string (remove quotes and markdown)
                     const cleanJson = rawRemarks
                       .replace(/^"/, '')
@@ -193,7 +193,7 @@ export default function VendorIncidentDetailPage() {
                       .replace(/```json/g, '')
                       .replace(/```/g, '')
                       .trim();
-                    
+
                     try {
                       const aiData = JSON.parse(cleanJson);
                       return (
@@ -231,14 +231,14 @@ export default function VendorIncidentDetailPage() {
                   <CardTitle className="text-lg text-green-800">Resolve Complaint</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Textarea 
-                    placeholder="Enter final resolution remarks..." 
+                  <Textarea
+                    placeholder="Enter final resolution remarks..."
                     value={resolutionRemarks}
                     onChange={(e) => setResolutionRemarks(e.target.value)}
                     className="bg-white"
                   />
-                  <Button 
-                    onClick={handleResolve} 
+                  <Button
+                    onClick={handleResolve}
                     disabled={updating || !resolutionRemarks}
                     className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
                   >
@@ -263,12 +263,11 @@ export default function VendorIncidentDetailPage() {
                     const timeAndTitle = lines[0];
                     const actor = lines[1];
                     const isLast = idx === arr.length - 1;
-                    
+
                     return (
                       <div key={idx} className="relative pl-8">
-                        <div className={`absolute left-0 top-1.5 h-6 w-6 rounded-full border-2 flex items-center justify-center z-10 ${
-                          isLast ? 'border-blue-600 bg-white' : 'border-blue-600 bg-blue-50'
-                        }`}>
+                        <div className={`absolute left-0 top-1.5 h-6 w-6 rounded-full border-2 flex items-center justify-center z-10 ${isLast ? 'border-blue-600 bg-white' : 'border-blue-600 bg-blue-50'
+                          }`}>
                           {isLast ? (
                             <div className="h-2 w-2 rounded-full bg-blue-600" />
                           ) : (

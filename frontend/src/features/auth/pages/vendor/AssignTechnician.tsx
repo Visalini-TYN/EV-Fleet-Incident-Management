@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import VendorLayout from "./VendorLayout";
-import { SafeIcon } from "../../../components/SafeIcon";
+import { SafeIcon } from "../../components/SafeIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +20,8 @@ export default function AssignTechnician() {
       try {
         setLoading(true);
         const data = await incidentsApi.getTechnicians();
-        setTechnicians(data || []);
+        const safeData = Array.isArray(data) ? data : (data?.content ? data.content : []);
+        setTechnicians(safeData);
       } catch (err) {
         console.error("Failed to fetch technicians:", err);
       } finally {
@@ -48,7 +49,7 @@ export default function AssignTechnician() {
     <VendorLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
@@ -70,13 +71,12 @@ export default function AssignTechnician() {
             ) : (
               <div className="grid gap-4">
                 {technicians.map((tech) => (
-                  <Card 
-                    key={tech.id} 
-                    className={`cursor-pointer transition-all border-2 ${
-                      selectedTech === tech.id 
-                        ? "border-blue-600 bg-blue-50/30" 
+                  <Card
+                    key={tech.id}
+                    className={`cursor-pointer transition-all border-2 ${selectedTech === tech.id
+                        ? "border-blue-600 bg-blue-50/30"
                         : "border-transparent hover:border-slate-200"
-                    }`}
+                      }`}
                     onClick={() => setSelectedTech(tech.id)}
                   >
                     <CardContent className="p-4 flex items-center justify-between">
@@ -133,8 +133,8 @@ export default function AssignTechnician() {
                   </div>
                 )}
 
-                <Button 
-                  className="w-full h-12 text-base font-bold shadow-md shadow-blue-200" 
+                <Button
+                  className="w-full h-12 text-base font-bold shadow-md shadow-blue-200"
                   disabled={!selectedTech || assigning}
                   onClick={handleAssign}
                 >
