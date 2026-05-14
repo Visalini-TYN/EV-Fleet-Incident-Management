@@ -72,11 +72,11 @@ export default function HomeforAdmin() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-3xl font-bold">User Management</h2>
-            <p className="mt-2 text-sm text-[#717783]">
+            <p className="mt-2 text-sm text-muted-foreground">
               Review and manage access for individual drivers and corporate entities.
             </p>
           </div>
-          <div className="flex rounded-xl bg-[#e6e8ef] p-1">
+          <div className="flex rounded-xl bg-[var(--app-surface-2)] p-1">
             {([
               { label: "All Users", value: "ALL" },
               { label: "Pending", value: "PENDING" },
@@ -85,8 +85,8 @@ export default function HomeforAdmin() {
               <button
                 key={item.value}
                 className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${statusFilter === item.value
-                    ? "bg-white text-[#005797] shadow-sm"
-                    : "text-[#414751] hover:bg-[#eceef5]"
+                    ? "bg-[var(--app-surface)] text-primary shadow-sm"
+                    : "text-muted-foreground hover:bg-[var(--app-surface-3)]"
                   }`}
                 onClick={() => setStatusFilter(item.value)}
               >
@@ -97,57 +97,47 @@ export default function HomeforAdmin() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-xl border border-[#c0c7d3]/20 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-sm">
             <div className="mb-4 flex items-start justify-between">
-              <div className="rounded-lg bg-[#005797]/10 p-2 text-[#005797]">
+              <div className="rounded-lg bg-[var(--app-brand-soft)] p-2 text-[var(--app-brand)]">
                 <span className="material-symbols-outlined">group</span>
               </div>
-              <span className="text-xs font-semibold text-[#717783]">+12% this week</span>
+              <span className="text-xs font-semibold text-muted-foreground">+12% this week</span>
             </div>
-            <p className="text-xs uppercase tracking-wider text-[#717783]">Total Active Users</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Active Users</p>
             <h3 className="text-3xl font-semibold">{totalApproved}</h3>
           </div>
 
-          <div className="rounded-xl border border-[#c0c7d3]/20 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-sm">
             <div className="mb-4 flex items-start justify-between">
-              <div className="rounded-lg bg-[#e8e700]/30 p-2 text-[#626200]">
+              <div className="rounded-lg bg-[var(--app-warning-soft)] p-2 text-[var(--app-warning)]">
                 <span className="material-symbols-outlined">pending_actions</span>
               </div>
-              <span className="text-xs font-bold text-[#ba1a1a]">Action Required</span>
+              <span className="text-xs font-bold text-[var(--app-danger)]">Action Required</span>
             </div>
-            <p className="text-xs uppercase tracking-wider text-[#717783]">Pending Approvals</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Pending Approvals</p>
             <h3 className="text-3xl font-semibold">{totalPending}</h3>
           </div>
 
-          <div className="rounded-xl border border-[#c0c7d3]/20 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-sm">
             <div className="mb-4 flex items-start justify-between">
-              <div className="rounded-lg bg-[#ffb787]/30 p-2 text-[#884200]">
+              <div className="rounded-lg bg-[var(--app-info-soft)] p-2 text-[var(--app-info)]">
                 <span className="material-symbols-outlined">domain</span>
               </div>
-              <span className="text-xs font-semibold text-[#717783]">8 New Organizations</span>
+              <span className="text-xs font-semibold text-muted-foreground">8 New Organizations</span>
             </div>
-            <p className="text-xs uppercase tracking-wider text-[#717783]">Corporate Partners</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Corporate Partners</p>
             <h3 className="text-3xl font-semibold">{totalOrganizations}</h3>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-[#c0c7d3]/20 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#c0c7d3]/20 bg-white p-6">
+        <div className="overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] shadow-sm">
+          <div className="flex items-center justify-between border-b border-[var(--app-border)] bg-[var(--app-surface)] p-6">
             <h3 className="text-sm font-semibold">User Registry</h3>
-            <div className="flex gap-2">
-              <button className="flex items-center gap-2 rounded-lg border border-[#717783] px-3 py-2 text-xs font-semibold transition-colors hover:bg-[#eceef5]">
-                <span className="material-symbols-outlined text-[18px]">filter_list</span>
-                Filter
-              </button>
-              <button className="flex items-center gap-2 rounded-lg border border-[#717783] px-3 py-2 text-xs font-semibold transition-colors hover:bg-[#eceef5]">
-                <span className="material-symbols-outlined text-[18px]">download</span>
-                Export
-              </button>
-            </div>
           </div>
 
           {error && (
-            <div className="border-b border-[#c0c7d3]/20 bg-red-50 px-6 py-4 text-sm text-red-700">
+            <div className="border-b border-[var(--app-border)] bg-[var(--app-danger-soft)] px-6 py-4 text-sm text-[var(--app-danger)]">
               {error}
             </div>
           )}
@@ -155,24 +145,24 @@ export default function HomeforAdmin() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="bg-[#f1f3fb]">
-                  <th className="px-6 py-4 text-xs font-semibold text-[#717783]">User Details</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-[#717783]">Role</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-[#717783]">Account Type</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-[#717783]">Status</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-[#717783]">Actions</th>
+                <tr className="bg-[var(--app-surface-2)]">
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground">User Details</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground">Role</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground">Account Type</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground">Status</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#c0c7d3]/20">
+              <tbody className="divide-y divide-[var(--app-border)]">
                 {isLoading ? (
                   <tr>
-                    <td className="px-6 py-6 text-sm text-[#717783]" colSpan={5}>
+                    <td className="px-6 py-6 text-sm text-muted-foreground" colSpan={5}>
                       Loading users...
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-6 text-sm text-[#717783]" colSpan={5}>
+                    <td className="px-6 py-6 text-sm text-muted-foreground" colSpan={5}>
                       No users found.
                     </td>
                   </tr>
@@ -186,19 +176,19 @@ export default function HomeforAdmin() {
                     const displayName =
                       user.fullName || user.companyName || user.email;
                     return (
-                      <tr key={user.id} className="group transition-colors hover:bg-[#f0f7ff]">
+                      <tr key={user.id} className="group transition-colors hover:bg-[var(--app-surface-2)]">
                         <td className="px-6 py-4">
                           <div>
                             <p className="text-sm font-semibold">{displayName}</p>
-                            <p className="text-xs text-[#717783]">{user.email}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#717783]">{user.role ?? "-"}</td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">{user.role ?? "-"}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${accountType === "Individual"
-                                ? "bg-[#005797]/10 text-[#005797]"
-                                : "bg-[#e6e8ef] text-[#414751]"
+                                ? "bg-[var(--app-brand-soft)] text-[var(--app-brand)]"
+                                : "bg-[var(--app-surface-2)] text-muted-foreground"
                               }`}
                           >
                             {accountType}
@@ -206,18 +196,18 @@ export default function HomeforAdmin() {
                         </td>
                         <td className="px-6 py-4">
                           <div
-                            className={`flex items-center gap-2 text-xs font-bold uppercase ${status === "APPROVED" ? "text-[#0070c0]" : "text-[#626200]"
+                            className={`flex items-center gap-2 text-xs font-bold uppercase ${status === "APPROVED" ? "text-[var(--app-info)]" : "text-[var(--app-warning)]"
                               }`}
                           >
                             <span
-                              className={`h-2 w-2 rounded-full ${status === "APPROVED" ? "bg-[#0070c0]" : "bg-[#626200]"
+                              className={`h-2 w-2 rounded-full ${status === "APPROVED" ? "bg-[var(--app-info)]" : "bg-[var(--app-warning)]"
                                 }`}
                             ></span>
                             {status}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button className="p-2 text-[#717783] transition-colors hover:text-[#005797]">
+                          <button className="p-2 text-muted-foreground transition-colors hover:text-primary">
                             <span className="material-symbols-outlined">more_vert</span>
                           </button>
                         </td>
@@ -229,24 +219,24 @@ export default function HomeforAdmin() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#c0c7d3]/20 bg-white px-6 py-4">
-            <p className="text-xs text-[#717783]">
+          <div className="flex items-center justify-between border-t border-[var(--app-border)] bg-[var(--app-surface)] px-6 py-4">
+            <p className="text-xs text-muted-foreground">
               Showing {users.length} users on page {page} of {totalPages}
             </p>
             <div className="flex items-center gap-2">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--app-border)] transition-colors hover:bg-[var(--app-surface-2)] disabled:opacity-40"
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={page === 1}
               >
-                <ChevronLeft className="h-4 w-4 text-[#717783]" />
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               {getPageNumbers(page, totalPages).map((pageNumber) => (
                 <button
                   key={pageNumber}
                   className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${pageNumber === page
-                      ? "bg-[#005797] text-white"
-                      : "border border-[#c0c7d3] hover:bg-[#eceef5]"
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-[var(--app-border)] hover:bg-[var(--app-surface-2)]"
                     }`}
                   onClick={() => setPage(pageNumber)}
                 >
@@ -254,11 +244,11 @@ export default function HomeforAdmin() {
                 </button>
               ))}
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#c0c7d3] transition-colors hover:bg-[#eceef5] disabled:opacity-40"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--app-border)] transition-colors hover:bg-[var(--app-surface-2)] disabled:opacity-40"
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={page === totalPages}
               >
-                <ChevronRight className="h-4 w-4 text-[#717783]" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
           </div>

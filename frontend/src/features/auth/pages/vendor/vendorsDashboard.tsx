@@ -51,16 +51,6 @@ export default function Dashboard() {
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Vendor Command Center</h1>
                         <p className="text-slate-500 mt-1">Real-time overview of fleet incidents and field operations.</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                            <SafeIcon name="Download" className="w-4 h-4" />
-                            Export Report
-                        </button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-200">
-                            <SafeIcon name="Plus" className="w-4 h-4" />
-                            New Log
-                        </button>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

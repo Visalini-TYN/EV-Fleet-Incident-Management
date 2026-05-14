@@ -82,16 +82,16 @@ export default function AdminVehiclePage() {
 
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-[#f8f9ff] text-slate-900 flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
         <main className="mx-auto w-full max-w-7xl flex-1 px-8 py-10">
           {/* PAGE HEADER */}
           <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900">
+              <h1 className="text-4xl font-bold text-foreground">
                 Admin Vehicle Inventory
               </h1>
 
-              <p className="mt-2 text-slate-500 text-lg">
+              <p className="mt-2 text-lg text-muted-foreground">
                 Manage and monitor your enterprise electric vehicle fleet
                 assets.
               </p>
@@ -108,18 +108,18 @@ export default function AdminVehiclePage() {
                   placeholder="Search vehicles..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-10 rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-[#0070c0]"
+                  className="h-10 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] pl-10 pr-4 text-sm outline-none focus:border-primary"
                 />
               </div>
 
               {/* STATUS FILTER */}
-              <div className="flex items-center rounded-xl border bg-slate-100 p-1">
+              <div className="flex items-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-1">
                 <button
                   onClick={() => setStatusFilter("ALL")}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                     statusFilter === "ALL"
-                      ? "bg-[#005797] text-white shadow-sm"
-                      : "text-slate-600 hover:text-[#005797]"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-primary"
                   }`}
                 >
                   All
@@ -129,8 +129,8 @@ export default function AdminVehiclePage() {
                   onClick={() => setStatusFilter("ACTIVE")}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                     statusFilter === "ACTIVE"
-                      ? "bg-[#005797] text-white shadow-sm"
-                      : "text-slate-600 hover:text-[#005797]"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-primary"
                   }`}
                 >
                   Active
@@ -140,24 +140,24 @@ export default function AdminVehiclePage() {
                   onClick={() => setStatusFilter("INACTIVE")}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                     statusFilter === "INACTIVE"
-                      ? "bg-[#005797] text-white shadow-sm"
-                      : "text-slate-600 hover:text-[#005797]"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-primary"
                   }`}
                 >
                   Inactive
                 </button>
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
-                className="border-[#005797] text-[#005797]"
+                className="border-primary text-primary"
               >
                 <Filter className="mr-2 h-4 w-4" />
                 Filter
-              </Button>
+              </Button> */}
 
               <Button
-                className="bg-[#0070c0] hover:bg-[#005797]"
+                className="mt-2 bg-primary hover:bg-primary/80"
                 onClick={() => setOpenModal(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -170,9 +170,9 @@ export default function AdminVehiclePage() {
           {loading && (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-[#0070c0]" />
+                <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
 
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-muted-foreground">
                   Loading vehicles...
                 </p>
               </div>
@@ -190,12 +190,12 @@ export default function AdminVehiclePage() {
           {!loading &&
             !error &&
             filteredVehicles.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-                <h3 className="text-lg font-semibold text-slate-700">
+              <div className="rounded-2xl border border-dashed border-[var(--app-border)] bg-[var(--app-surface)] p-12 text-center">
+                <h3 className="text-lg font-semibold text-foreground">
                   No vehicles found
                 </h3>
 
-                <p className="mt-2 text-slate-500">
+                <p className="mt-2 text-muted-foreground">
                   Try changing your filters or search term.
                 </p>
               </div>
@@ -211,21 +211,21 @@ export default function AdminVehiclePage() {
                     <div
                       key={index}
                       onClick={() => navigate(`/admin/vehicle/${vehicle.id}`)}
-                      className="flex flex-col cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-[#0070c0]"
+                      className="flex cursor-pointer flex-col rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-sm transition-all hover:border-primary hover:shadow-md"
                     >
                       {/* HEADER */}
                       <div className="mb-6 flex items-start justify-between">
                         <div>
-                          <h3 className="text-2xl font-bold text-slate-900">
+                          <h3 className="text-2xl font-bold text-foreground">
                             {vehicle.make}
                           </h3>
 
-                          <p className="text-slate-500">
+                          <p className="text-muted-foreground">
                             {vehicle.model}
                           </p>
                         </div>
 
-                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-[#005797]">
+                        <span className="rounded-full bg-[var(--app-brand-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-brand)]">
                           {vehicle.licensePlate}
                         </span>
                       </div>
@@ -233,31 +233,31 @@ export default function AdminVehiclePage() {
                       {/* DETAILS */}
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             VIN
                           </span>
 
-                          <span className="font-medium text-slate-800">
+                          <span className="font-medium text-foreground">
                             {vehicle.vin}
                           </span>
                         </div>
 
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             Year
                           </span>
 
-                          <span className="font-medium text-slate-800">
+                          <span className="font-medium text-foreground">
                             {vehicle.yearOfManufacture}
                           </span>
                         </div>
 
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             Battery
                           </span>
 
-                          <span className="font-medium text-slate-800">
+                          <span className="font-medium text-foreground">
                             {vehicle.batteryCapacityKwh} kWh
                           </span>
                         </div>

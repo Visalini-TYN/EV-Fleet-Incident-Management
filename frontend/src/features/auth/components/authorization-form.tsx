@@ -1005,11 +1005,11 @@ export default function AuthorizationForm() {
       <footer className="mt-12 flex flex-col items-center justify-between gap-4 border-t bg-white px-8 py-6 md:flex-row">
         <div className="flex items-center gap-3">
           <span className="font-semibold">
-            FleetCore EV
+            FleetOps
           </span>
 
           <span className="text-sm text-slate-500">
-            © 2024 FleetCore EV Management.
+            © 2024 FleetOps Enterprise Systems. All rights reserved.
           </span>
         </div>
 

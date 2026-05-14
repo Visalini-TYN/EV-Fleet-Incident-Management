@@ -14,6 +14,7 @@ export default function AssignTechnician() {
   const [loading, setLoading] = useState(true);
   const [selectedTech, setSelectedTech] = useState<number | null>(null);
   const [assigning, setAssigning] = useState(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const fetchTechs = async () => {
@@ -31,15 +32,26 @@ export default function AssignTechnician() {
     fetchTechs();
   }, []);
 
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+        if (notification.type === 'success') {
+          navigate("/vendor/assigned");
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification, navigate]);
+
   const handleAssign = async () => {
     if (!selectedTech || !id) return;
     try {
       setAssigning(true);
       await incidentsApi.assignTechnician(Number(id), selectedTech);
-      alert(`Technician successfully assigned to incident #${id}`);
-      navigate("/vendor/assigned");
+      setNotification({ message: `Technician successfully assigned to incident #${id}`, type: 'success' });
     } catch (err) {
-      alert("Failed to assign technician.");
+      setNotification({ message: 'Failed to assign technician.', type: 'error' });
     } finally {
       setAssigning(false);
     }
@@ -47,6 +59,17 @@ export default function AssignTechnician() {
 
   return (
     <VendorLayout>
+      {notification && (
+        <div
+          className={`fixed bottom-6 right-6 px-6 py-4 text-sm font-semibold text-white z-50 rounded-lg animate-in slide-in-from-bottom-2 fade-in duration-300 ${
+            notification.type === 'success'
+              ? 'bg-green-500'
+              : 'bg-red-500'
+          }`}
+        >
+          {notification.message}
+        </div>
+      )}
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <button

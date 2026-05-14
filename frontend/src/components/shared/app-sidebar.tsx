@@ -95,17 +95,17 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
         <div className="flex flex-col items-start gap-3">
-          <Avatar className="size-16 rounded-xl border-2 border-primary group-data-[collapsible=icon]:size-8">
+          <Avatar className="size-16 rounded-xl border-2 border-[var(--app-brand)] group-data-[collapsible=icon]:size-8">
             <AvatarImage src="" alt={displayName} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-lg">
+            <AvatarFallback className="rounded-xl bg-[var(--app-brand-soft)] text-[var(--app-brand)] font-bold text-lg">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="group-data-[collapsible=icon]:hidden">
-            <div className="text-base font-bold text-primary leading-tight">
+            <div className="text-base font-bold leading-tight text-[var(--app-brand)]">
               {displayName}
             </div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">
+            <div className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
               {userId !== undefined ? `${displayRoleLabel} · ID ${userId}` : displayRoleLabel}
             </div>
           </div>
@@ -124,7 +124,7 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={item.title}
-                      className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold data-[active=true]:border data-[active=true]:border-primary/30"
+                      className="data-[active=true]:border data-[active=true]:border-[var(--app-brand)] data-[active=true]:bg-[var(--app-brand-soft)] data-[active=true]:font-semibold data-[active=true]:text-[var(--app-brand)]"
                     >
                       <Link to={item.url}>
                         <item.icon className="size-4" />

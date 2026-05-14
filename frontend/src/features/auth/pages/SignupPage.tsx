@@ -567,7 +567,7 @@ const Signup = () => {
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           
           <p className="text-sm text-muted-foreground">
-            © 2024 VoltTrack Enterprise Systems. All rights reserved.
+            © 2024 FleetOps Enterprise Systems. All rights reserved.
           </p>
 
           <div className="flex gap-6 text-sm text-muted-foreground">

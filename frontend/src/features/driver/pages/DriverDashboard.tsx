@@ -84,7 +84,7 @@ export default function DriverDashboard() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="bg-background">
         <DashboardHeader />
         <main className="flex-1 space-y-6 p-4 sm:p-6">
           {/* Welcome greeting */}
@@ -172,7 +172,7 @@ export default function DriverDashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                <div className="flex items-start gap-2 rounded-lg border border-[var(--app-warning)]/30 bg-[var(--app-warning-soft)] p-3 text-sm text-foreground dark:border-[var(--app-warning)]/20 dark:bg-[var(--app-warning-soft)] dark:text-[var(--app-warning)]">
                   <Info className="mt-0.5 h-4 w-4 shrink-0" />
                   <p>
                     Emergency? Call dispatch directly — this form is for

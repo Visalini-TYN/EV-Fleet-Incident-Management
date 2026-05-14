@@ -33,10 +33,10 @@ export function DashboardHeader({ title }: { title?: string }) {
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-6 shrink-0">
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4 border-b border-[var(--app-border)] bg-background/85 px-6 backdrop-blur-md">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="h-6" />
-        <h2 className="text-xl font-bold text-primary tracking-tight">
+        <h2 className="text-xl font-bold tracking-tight text-primary">
           {title ?? "FleetOps Driver"}
         </h2>
 
@@ -80,12 +80,12 @@ export function DashboardHeader({ title }: { title?: string }) {
           <button
             type="button"
             onClick={() => setProfileDialogOpen(true)}
-            className="rounded-full ring-2 ring-primary/20 transition hover:ring-primary/50 focus:outline-none focus:ring-primary"
+            className="rounded-full ring-2 ring-[color:var(--app-brand-soft)] transition hover:ring-[color:var(--app-brand)] focus:outline-none focus:ring-[color:var(--app-brand)]"
             aria-label="View profile"
           >
             <Avatar className="size-9">
               <AvatarImage src="" alt={displayName} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-[var(--app-brand-soft)] font-semibold text-[var(--app-brand)]">
                 {initials}
               </AvatarFallback>
             </Avatar>

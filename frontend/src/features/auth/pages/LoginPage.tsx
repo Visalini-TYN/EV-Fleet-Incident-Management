@@ -237,7 +237,7 @@ const Login = () => {
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
 
           <div className="font-semibold text-blue-700">
-            VoltTrack Fleet
+           FleetOps
           </div>
 
           <div className="text-sm text-muted-foreground text-center">

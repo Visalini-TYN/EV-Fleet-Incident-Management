@@ -61,10 +61,6 @@ export default function Reports() {
                         <h1 className="text-2xl font-bold text-slate-900">Live Reports</h1>
                         <p className="text-sm text-slate-500 font-medium mt-1">Real-time data from Complaint API</p>
                     </div>
-                    <button className="btn-primary flex items-center gap-2 text-sm">
-                        <SafeIcon name="Download" className="w-4 h-4" />
-                        Export Data
-                    </button>
                 </div>
 
                 {error && <p className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-lg">{error}</p>}

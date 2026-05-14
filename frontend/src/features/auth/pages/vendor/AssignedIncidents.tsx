@@ -45,16 +45,6 @@ export default function AssignedIncidents() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                            <SafeIcon name="Filter" className="w-4 h-4" />
-                            Filters
-                        </button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-200">
-                            <SafeIcon name="Download" className="w-4 h-4" />
-                            Export Data
-                        </button>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
