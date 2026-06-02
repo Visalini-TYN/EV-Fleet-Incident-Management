@@ -5,13 +5,14 @@
 
 import { request } from "./client";
 import type {
+  AiChatMessage,
+  AiQueryRequest,
+  AiQueryResponse,
   CreateIncidentRequest,
   DriverWorkflowResponse,
   IncidentDataPayload,
   IncidentRecord,
   UploadedDocument,
-  AiQueryRequest,
-  AiQueryResponse,
 } from "../types";
 
 /**
@@ -32,24 +33,30 @@ export const incidentsApi = {
   /**
    * POST /api/complaints
    * Driver submits a new complaint.
-   * Note: backend returns just a confirmation string, not the created record.
-   * Caller should refetch the list after this resolves.
+   * Backend returns a confirmation string, not the created record — caller
+   * should refetch the list after this resolves.
    */
   create: (payload: CreateIncidentRequest): Promise<string> =>
     request<string>("/api/complaints", { method: "POST", body: payload }),
 
-  /**
-   * GET /api/complaints
-   * Fetches complaints scoped to the logged-in user (driver sees their own).
-   */
+  /** GET /api/complaints — list complaints scoped to the logged-in user. */
   getAll: (): Promise<IncidentRecord[]> => request<IncidentRecord[]>("/api/complaints"),
 
-  /**
-   * POST /api/complaints/details
-   * Fetches a single complaint by ID. Unusual REST style but that's the contract.
-   */
+  /** POST /api/complaints/details — fetch a single complaint. */
   getById: (complaintId: number): Promise<IncidentRecord> =>
     request<IncidentRecord>("/api/complaints/details", {
+      method: "POST",
+      body: { complaintId },
+    }),
+
+  /**
+   * POST /api/complaints/ai-chat
+   * Returns the clean conversational chat history (AI + USER messages
+   * interleaved in chronological order). This is the recommended way to
+   * render the AI chat — no more regex parsing of workSummary.
+   */
+  getAiChat: (complaintId: number): Promise<AiChatMessage[]> =>
+    request<AiChatMessage[]>("/api/complaints/ai-chat", {
       method: "POST",
       body: { complaintId },
     }),
@@ -58,7 +65,9 @@ export const incidentsApi = {
 export const aiApi = {
   /**
    * POST /api/ai/queries
-   * Submit an AI question. Synchronous — answer comes back in the response.
+   * @deprecated Follow-up questions now go through workflowApi.submitDriverResponse
+   * with continueAi=true and userFollowUp set. This endpoint is kept around for
+   * compatibility but no longer used by the chat panel.
    */
   createQuery: (payload: AiQueryRequest): Promise<AiQueryResponse> =>
     request<AiQueryResponse>("/api/ai/queries", { method: "POST", body: payload }),
@@ -67,10 +76,10 @@ export const aiApi = {
 export const workflowApi = {
   /**
    * POST /api/workflow/user-response
-   * Driver tells the workflow whether the AI resolved the issue.
-   * - resolved=true → workflow closes complaint as RESOLVED
-   * - resolved=false, continueAi=true → another AI attempt (up to 3 total)
-   * - resolved=false, continueAi=false → escalate to vendor
+   * Three behaviors based on the body:
+   *   { resolved: true,  continueAi: false }                        → mark RESOLVED
+   *   { resolved: false, continueAi: false }                        → escalate to vendor
+   *   { resolved: false, continueAi: true,  userFollowUp: "..." }   → ask AI a follow-up
    */
   submitDriverResponse: (payload: DriverWorkflowResponse): Promise<unknown> =>
     request("/api/workflow/user-response", { method: "POST", body: payload }),
@@ -80,7 +89,7 @@ export const documentsApi = {
   /**
    * POST /api/documents/upload
    * Multipart upload for incident evidence (photos/videos).
-   * Returns the S3 URL via fileUrl — pass that into the AI payload's attachments.
+   * Returns the S3 URL via fileUrl.
    */
   upload: (file: File, documentType: string = "OTHER"): Promise<UploadedDocument> => {
     const form = new FormData();
@@ -93,4 +102,3 @@ export const documentsApi = {
     });
   },
 };
-

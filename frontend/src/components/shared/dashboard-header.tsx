@@ -5,7 +5,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/auth-context";
+import { ProfileDetailDialog } from "@/features/driver/components/profile-detail-dialog";
 
 /** Pulls "AB"-style initials from a full name. Falls back to "DR" (Driver). */
 function getInitials(fullName: string | undefined | null): string {
@@ -19,6 +25,8 @@ function getInitials(fullName: string | undefined | null): string {
 export function DashboardHeader() {
   const { theme, setTheme } = useTheme();
   const { profile } = useAuth();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
   const profileData = profile as { fullName?: string } | null;
   const initials = getInitials(profileData?.fullName);
   const displayName = profileData?.fullName ?? "Driver";
@@ -33,7 +41,7 @@ export function DashboardHeader() {
         </h2>
 
         <div className="ml-auto flex items-center gap-3">
-          {/* Theme toggle — fully functional */}
+          {/* Theme toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -46,17 +54,32 @@ export function DashboardHeader() {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            aria-label="Notifications"
-          >
-            <Bell className="size-5" />
-          </Button>
+          {/* Notification bell — placeholder, no backend wired */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Notifications"
+              >
+                <Bell className="size-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Notifications</p>
+                <p className="text-xs text-muted-foreground">
+                  You're all caught up. Live notifications will appear here once enabled.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
 
+          {/* Clickable avatar — opens profile dialog */}
           <button
             type="button"
+            onClick={() => setProfileDialogOpen(true)}
             className="rounded-full ring-2 ring-primary/20 transition hover:ring-primary/50 focus:outline-none focus:ring-primary"
             aria-label="View profile"
           >
@@ -69,6 +92,11 @@ export function DashboardHeader() {
           </button>
         </div>
       </header>
+
+      <ProfileDetailDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </>
   );
 }

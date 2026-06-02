@@ -4,12 +4,7 @@
 // the public surface (request, ApiError) without team agreement.
 // =============================================================================
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
-
-if (!BASE_URL) {
-  // eslint-disable-next-line no-console
-  console.error("VITE_API_BASE_URL is not set. Check your .env file.");
-}
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 /**
  * Token accessor. Teammate A's auth module should replace this with a real
@@ -43,6 +38,32 @@ interface RequestOptions {
   multipart?: boolean;
   /** Override or extend headers. */
   headers?: Record<string, string>;
+}
+
+/**
+ * Decides whether a parsed response is an envelope wrapper like
+ *   { message: "...", data: [...] }
+ * (which we want to unwrap) versus a real entity that just happens to have
+ * a `data` field as part of its own schema (like our incident records,
+ * which carry a stringified JSON blob in a field called `data`).
+ *
+ * Envelopes are objects whose keys are roughly { data + message/success/status }
+ * and nothing else. Real entities carry schema fields like `id`, `createdAt`,
+ * `status` (the entity's status, not the envelope's), etc.
+ *
+ * Heuristic: it's an envelope only when EITHER
+ *   - the only keys are `data` plus a subset of {message, success}, OR
+ *   - there is no `id` field at the top level.
+ *
+ * If the top level has an `id`, it's almost certainly the entity itself.
+ */
+function isEnvelope(parsed: object): boolean {
+  const obj = parsed as Record<string, unknown>;
+  if (!("data" in obj)) return false;
+  if ("id" in obj) return false; // entity, not envelope
+  const keys = Object.keys(obj);
+  const envelopeKeys = new Set(["data", "message", "success", "status"]);
+  return keys.every((k) => envelopeKeys.has(k));
 }
 
 /**
@@ -94,8 +115,8 @@ export async function request<T = unknown>(
     throw new ApiError(res.status, message, parsed);
   }
 
-  // Success — unwrap if envelope present, else return as-is.
-  if (parsed && typeof parsed === "object" && "data" in parsed) {
+  // Success — unwrap if it looks like a true envelope, else return as-is.
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && isEnvelope(parsed)) {
     return (parsed as { data: T }).data;
   }
   return parsed as T;

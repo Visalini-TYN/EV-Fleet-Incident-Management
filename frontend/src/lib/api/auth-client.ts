@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from "axios";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
@@ -23,6 +23,9 @@ const getTokensFromResponse = (payload: TokenResponse) => {
 
 export const api = axios.create({
   baseURL: baseUrl.replace(/\/$/, ""),
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 api.interceptors.request.use((config) => {
@@ -64,9 +67,14 @@ api.interceptors.response.use(
     }
 
     try {
-      const refreshResponse = await api.post<TokenResponse>(
-        REFRESH_ENDPOINT,
+      const refreshResponse = await axios.post<TokenResponse>(
+        `${baseUrl.replace(/\/$/, "")}${REFRESH_ENDPOINT}`,
         { refreshToken },
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
       );
 
       const { accessToken, refreshToken: nextRefreshToken } =

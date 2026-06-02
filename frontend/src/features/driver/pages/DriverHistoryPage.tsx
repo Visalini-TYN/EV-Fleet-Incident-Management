@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/table";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useDriverIncidents } from "../hooks/use-driver-incidents";
-import { IncidentDetailDialog } from "../components/incident-detail-dialog";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { DashboardHeader } from "@/components/shared/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -42,13 +41,11 @@ const STATUS_LABEL: Record<IncidentStatus, string> = {
 };
 
 export default function HistoryPage() {
+  const navigate = useNavigate();
   const { incidents, loading, error, refresh, parseData } = useDriverIncidents();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const openDetails = (id: number) => {
-    setSelectedId(id);
-    setDialogOpen(true);
+    navigate(`/driver/history/${id}`);
   };
 
   return (
@@ -61,7 +58,7 @@ export default function HistoryPage() {
             <div>
               <h1 className="text-2xl font-semibold">Incident history</h1>
               <p className="text-sm text-muted-foreground">
-                Every issue you've reported and where it stands now.
+                Click a row to view the full details and chat history.
               </p>
             </div>
             <Button
@@ -107,15 +104,20 @@ export default function HistoryPage() {
                       <TableHead>Vehicle</TableHead>
                       <TableHead>Reported</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Details</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {incidents.map((inc) => {
                       const payload = parseData(inc);
                       return (
-                        <TableRow key={inc.id}>
-                          <TableCell className="font-mono text-xs">#{inc.id}</TableCell>
+                        <TableRow
+                          key={inc.id}
+                          onClick={() => openDetails(inc.id)}
+                          className="cursor-pointer hover:bg-muted/50"
+                        >
+                          <TableCell className="font-mono text-xs">
+                            #{inc.id}
+                          </TableCell>
                           <TableCell>{inc.issueCategory}</TableCell>
                           <TableCell>
                             {inc.vehicleId || payload?.vehicleId || "—"}
@@ -128,15 +130,6 @@ export default function HistoryPage() {
                               {STATUS_LABEL[inc.status] ?? inc.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => openDetails(inc.id)}
-                            >
-                              View details
-                            </Button>
-                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -147,11 +140,6 @@ export default function HistoryPage() {
           </Card>
         </main>
       </SidebarInset>
-      <IncidentDetailDialog
-        incidentId={selectedId}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
     </SidebarProvider>
   );
 }

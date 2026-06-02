@@ -1,12 +1,3 @@
-// =============================================================================
-// Shared backend-matching types
-// Append-only file. Each teammate adds their own section. Do not edit others'.
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// AUTH (owned by Teammate A — placeholder shape, confirm with them)
-// -----------------------------------------------------------------------------
-
 export type UserRole = "DRIVER" | "VENDOR_ADMIN" | "ADMIN" | "SUPER_ADMIN" | "USER";
 
 export interface AuthUser {
@@ -41,6 +32,29 @@ export type IssueCategory =
   | "CHARGING_ISSUE"
   | "UNKNOWN";
 
+/** Single message from POST /api/complaints/ai-chat. */
+export interface AiChatMessage {
+  sender: "AI" | "USER";
+  message: string;
+  confidence: number | null;
+  timestamp: string;
+  attemptCount: number | null;
+}  
+
+/** Vehicle record from GET /api/vehicles. */
+export interface Vehicle {
+  id: number;
+  userId: number | null;
+  make: string;
+  model: string;
+  licensePlate: string;
+  vin: string;
+  status: "AVAILABLE" | "ACTIVE" | "INACTIVE" | "UNDER_MAINTENANCE" | "DECOMMISSIONED";
+  yearOfManufacture: number;
+  batteryCapacityKwh: number;
+  chassisNo: string;
+}  
+
 /** Priority hint we send with the complaint. */
 export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -50,10 +64,13 @@ export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH";
  */
 export interface IncidentDataPayload {
   issueCategory: IssueCategory;
-  issueDescription: string;
-  location: string;           // "lat, lng" format per backend example
-  vehicleId: string;
-  attachments?: string[];     // S3 URLs from /api/documents/upload
+  /** Backend stores the driver's description here. Older records used
+   *  `issueDescription`; newer records use `description`. We read both. */
+  description?: string;
+  issueDescription?: string;
+  location?: string;
+  vehicleId?: string;
+  attachments?: string[];
 }
 
 /**
@@ -80,10 +97,11 @@ export interface IncidentRecord {
   workSummary: string | null;
 }
 
-/** Payload sent to POST /api/complaints. */
+/** Payload sent to POST /api/complaints.
+ * vehicleId is optional — backend auto-assigns it from the user's assigned vehicle. */
 export interface CreateIncidentRequest {
   complaintData: {
-    vehicleId: string;
+    vehicleId?: string;
     issueCategory: IssueCategory;
     description: string;
   };
@@ -117,10 +135,13 @@ export interface AiQueryResponse {
 }
 
 /** Payload sent to POST /api/workflow/user-response. */
+/** Payload sent to POST /api/workflow/user-response.
+ * When continueAi is true, include userFollowUp with the driver's next question. */
 export interface DriverWorkflowResponse {
   complaintId: number;
   resolved: boolean;
   continueAi: boolean;
+  userFollowUp?: string;
 }
 
 /** Response from POST /api/documents/upload. */
